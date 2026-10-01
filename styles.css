@@ -143,3 +143,11 @@
 		background-position: -200% 0;
 	}
 }
+
+/* URL shown in place of a missing description */
+.lpk-desc-url {
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller, 12px);
+	-webkit-line-clamp: 1;
+	word-break: break-all;
+}

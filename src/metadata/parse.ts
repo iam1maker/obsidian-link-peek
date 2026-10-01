@@ -125,6 +125,24 @@ export function parseMetadata(html: string, baseUrl: string, contentType: string
 	};
 }
 
+const DISPLAY_URL_MAX = 80;
+
+/**
+ * A URL as a human would read it: no scheme, no `www.`, no trailing slash,
+ * percent-encoding decoded, cut with an ellipsis when long. Used as the card's
+ * description when the page has none, so it never looks empty.
+ */
+export function displayUrl(url: string, max: number = DISPLAY_URL_MAX): string {
+	let text = url.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+	try {
+		text = decodeURIComponent(text);
+	} catch {
+		// Malformed escape sequences: keep the raw form.
+	}
+	text = text.replace(/\/$/, "");
+	return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
 export function hostnameOf(url: string): string | null {
 	try {
 		return new URL(url).hostname.replace(/^www\./, "");

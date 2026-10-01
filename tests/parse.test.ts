@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeEntities, metadataForNonHtml, parseMetadata } from "../src/metadata/parse";
+import { decodeEntities, displayUrl, metadataForNonHtml, parseMetadata } from "../src/metadata/parse";
 
 const BASE = "https://example.com/articles/42";
 
@@ -85,5 +85,20 @@ describe("metadataForNonHtml", () => {
 		expect(pdf.image).toBeNull();
 		const img = metadataForNonHtml("https://example.com/a.png", "image/png");
 		expect(img.image).toBe("https://example.com/a.png");
+	});
+});
+
+describe("displayUrl", () => {
+	it("strips scheme, www and trailing slash and decodes escapes", () => {
+		expect(displayUrl("https://www.news.ycombinator.com/")).toBe("news.ycombinator.com");
+		expect(displayUrl("https://zh.wikipedia.org/wiki/%E9%BB%91%E6%9B%9C%E7%9F%B3")).toBe("zh.wikipedia.org/wiki/黑曜石");
+	});
+
+	it("truncates long urls with an ellipsis and survives malformed escapes", () => {
+		const long = "https://example.com/" + "a".repeat(100);
+		const shown = displayUrl(long, 30);
+		expect(shown.length).toBe(30);
+		expect(shown.endsWith("…")).toBe(true);
+		expect(displayUrl("https://example.com/%E0%A4%A")).toBe("example.com/%E0%A4%A");
 	});
 });

@@ -1,6 +1,6 @@
 import { setIcon } from "obsidian";
 import type { LinkMetadata } from "../metadata/types";
-import { hostnameOf } from "../metadata/parse";
+import { displayUrl, hostnameOf } from "../metadata/parse";
 
 const VIEWPORT_MARGIN = 8;
 const ANCHOR_GAP = 6;
@@ -83,7 +83,12 @@ export class LinkPopover {
 		}
 		this.renderHeader(meta.siteName ?? hostnameOf(meta.url), meta.favicon, meta.url);
 		this.el.createDiv({ cls: "lpk-title", text: meta.title ?? meta.url });
-		if (meta.description) this.el.createDiv({ cls: "lpk-desc", text: meta.description });
+		if (meta.description) {
+			this.el.createDiv({ cls: "lpk-desc", text: meta.description });
+		} else if (meta.title) {
+			// No description (Hacker News, many blogs): show the readable URL so the card is never a lone title.
+			this.el.createDiv({ cls: "lpk-desc lpk-desc-url", text: displayUrl(meta.url) });
+		}
 	}
 
 	private renderHeader(siteName: string | null, favicon: string | null, url: string): void {
