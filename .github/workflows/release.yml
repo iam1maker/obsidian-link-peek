@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -36,6 +38,15 @@ jobs:
             echo "Tag $tag does not match manifest version $version" >&2
             exit 1
           fi
+
+      # Signed provenance so users (and the Obsidian directory) can verify the assets came from this repo's CI.
+      - name: Attest release assets
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            styles.css
+            manifest.json
 
       - name: Create release
         env:

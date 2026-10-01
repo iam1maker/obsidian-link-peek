@@ -10,16 +10,17 @@ const USER_AGENT =
 	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
 function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+	// `window.*` timers: Obsidian runs views in popout windows where bare globals can be the wrong realm.
 	return new Promise<T>((resolve, reject) => {
-		const timer = setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms);
+		const timer = window.setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms);
 		promise.then(
 			(v) => {
-				clearTimeout(timer);
+				window.clearTimeout(timer);
 				resolve(v);
 			},
-			(e) => {
-				clearTimeout(timer);
-				reject(e);
+			(e: unknown) => {
+				window.clearTimeout(timer);
+				reject(e instanceof Error ? e : new Error(String(e)));
 			},
 		);
 	});
