@@ -1,7 +1,7 @@
 {
 	"id": "link-peek",
 	"name": "Link Peek",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"minAppVersion": "1.13.0",
 	"description": "Hover any external link to see an OpenGraph preview card. Works in Live Preview, Reading view and Canvas; metadata is cached locally.",
 	"author": "iam1maker",
