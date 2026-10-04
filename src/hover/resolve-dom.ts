@@ -15,11 +15,15 @@ function isHttpUrl(value: string | null | undefined): value is string {
 	return !!value && /^https?:\/\//i.test(value);
 }
 
-/** Rendered Markdown (Reading view, Canvas text nodes, hover popovers): the anchor carries the href. */
+/**
+ * Rendered Markdown (Reading view, Canvas text nodes, hover popovers): the anchor
+ * carries the href. Properties and Bases cells render URLs as
+ * `.external-link[data-href]` divs instead of anchors.
+ */
 export function urlFromAnchor(target: Element): string | null {
-	const anchor = target.closest<HTMLAnchorElement>("a.external-link, a[href^='http://'], a[href^='https://']");
-	if (!anchor) return null;
-	const href = anchor.getAttribute("href");
+	const el = target.closest("a.external-link, a[href^='http://'], a[href^='https://'], .external-link[data-href]");
+	if (!el) return null;
+	const href = el.getAttribute("href") ?? el.getAttribute("data-href");
 	return isHttpUrl(href) ? href : null;
 }
 

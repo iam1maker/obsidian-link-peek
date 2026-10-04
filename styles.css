@@ -71,19 +71,80 @@
 	white-space: nowrap;
 }
 
-.lpk-open {
+.lpk-action {
 	display: inline-flex;
-	color: var(--text-muted);
+	align-items: center;
+	justify-content: center;
 	flex: 0 0 auto;
+	padding: 2px;
+	margin: -2px 0;
+	border: none;
+	background: none;
+	box-shadow: none;
+	color: var(--text-muted);
+	cursor: pointer;
 }
 
-.lpk-open:hover {
+.lpk-action:hover {
 	color: var(--text-accent);
+	background: var(--background-modifier-hover);
 }
 
-.lpk-open svg {
+.lpk-action svg {
 	width: 14px;
 	height: 14px;
+}
+
+/* Compact: favicon, site and title only. */
+.lpk-popover.is-compact {
+	width: 300px;
+}
+
+.lpk-popover.is-compact .lpk-title {
+	padding-bottom: 10px;
+}
+
+/* Error state: say why, offer the way out. */
+.lpk-error-text {
+	padding: 4px 12px 8px;
+	color: var(--text-muted);
+}
+
+.lpk-buttons {
+	display: flex;
+	gap: 6px;
+	padding: 0 12px 10px;
+}
+
+.lpk-buttons button,
+.lpk-buttons a.lpk-open-btn {
+	display: inline-flex;
+	align-items: center;
+	font-size: var(--font-ui-smaller, 12px);
+	padding: 2px 8px;
+	height: auto;
+	line-height: 1.6;
+	border-radius: var(--radius-s, 4px);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.lpk-buttons button:hover,
+.lpk-buttons a.lpk-open-btn:hover {
+	background: var(--interactive-hover);
+}
+
+/* Pinned: the card stays until closed, so make it selectable and mark it. */
+.lpk-popover.is-pinned {
+	border-color: var(--interactive-accent);
+	user-select: text;
+}
+
+.lpk-popover.is-pinned .lpk-pin {
+	color: var(--interactive-accent);
 }
 
 .lpk-title {
@@ -101,7 +162,7 @@
 	padding: 4px 12px 12px;
 	color: var(--text-muted);
 	display: -webkit-box;
-	-webkit-line-clamp: 3;
+	-webkit-line-clamp: var(--lpk-desc-lines, 3);
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	word-break: break-word;

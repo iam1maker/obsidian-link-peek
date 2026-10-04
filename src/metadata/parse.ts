@@ -11,8 +11,18 @@ const LINK_TAG_RE = /<link\b[^>]*>/gi;
 const TITLE_RE = /<title\b[^>]*>([\s\S]*?)<\/title>/i;
 const ATTR_RE = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
 
-/** Only parse the head: bodies can be megabytes and never carry OG tags. */
-const MAX_SCAN_CHARS = 512 * 1024;
+/**
+ * Only parse the head: bodies can be megabytes and never carry OG tags. Some
+ * heads are huge though (YouTube puts its <title> after 700 KB of inline
+ * JSON), so cut at `</head>` when we can find it and only cap otherwise.
+ */
+const MAX_SCAN_CHARS = 2 * 1024 * 1024;
+
+export function headOf(html: string): string {
+	const end = html.indexOf("</head>");
+	if (end !== -1) return html.slice(0, end);
+	return html.length > MAX_SCAN_CHARS ? html.slice(0, MAX_SCAN_CHARS) : html;
+}
 
 const NAMED_ENTITIES: Record<string, string> = {
 	amp: "&",
@@ -85,7 +95,7 @@ function first(...values: Array<string | null | undefined>): string | null {
 const ICON_REL_PRIORITY = ["icon", "shortcut icon", "apple-touch-icon", "apple-touch-icon-precomposed"];
 
 export function parseMetadata(html: string, baseUrl: string, contentType: string | null = "text/html"): LinkMetadata {
-	const head = html.length > MAX_SCAN_CHARS ? html.slice(0, MAX_SCAN_CHARS) : html;
+	const head = headOf(html);
 
 	const meta: Record<string, string> = {};
 	for (const tag of head.match(META_TAG_RE) ?? []) {
@@ -99,11 +109,13 @@ export function parseMetadata(html: string, baseUrl: string, contentType: string
 	let favicon: string | null = null;
 	let faviconRank = Number.POSITIVE_INFINITY;
 	let canonical: string | null = null;
+	let oembed: string | null = null;
 	for (const tag of head.match(LINK_TAG_RE) ?? []) {
 		const attrs = parseAttrs(tag);
 		const rel = (attrs.rel ?? "").toLowerCase().trim();
 		if (!attrs.href) continue;
 		if (rel === "canonical" && !canonical) canonical = attrs.href;
+		if (rel === "alternate" && (attrs.type ?? "").toLowerCase() === "application/json+oembed" && !oembed) oembed = attrs.href;
 		const rank = ICON_REL_PRIORITY.indexOf(rel);
 		if (rank !== -1 && rank < faviconRank) {
 			faviconRank = rank;
@@ -122,7 +134,13 @@ export function parseMetadata(html: string, baseUrl: string, contentType: string
 		favicon: resolveUrl(favicon, baseUrl) ?? resolveUrl("/favicon.ico", baseUrl),
 		siteName: first(meta["og:site_name"], meta["application-name"]) ?? hostnameOf(baseUrl),
 		contentType,
+		oembedUrl: resolveUrl(oembed, baseUrl),
 	};
+}
+
+/** Strip tags and collapse whitespace: oEmbed `html` snippets are the only HTML we show as text. */
+export function textFromHtml(html: string): string | null {
+	return cleanText(html.replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, " "));
 }
 
 const DISPLAY_URL_MAX = 80;

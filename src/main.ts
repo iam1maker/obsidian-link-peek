@@ -1,6 +1,7 @@
 import { Notice, Plugin, debounce } from "obsidian";
 import { MetadataCache, type SerializedCache } from "./cache";
 import { HoverController } from "./hover/controller";
+import { fetchMetadata } from "./metadata/fetch";
 import { DEFAULT_SETTINGS, FAILURE_TTL_MS, LinkPeekSettingTab, ttlMsFromDays, type LinkPeekSettings } from "./settings";
 
 interface PersistedData {
@@ -11,6 +12,8 @@ interface PersistedData {
 export default class LinkPeekPlugin extends Plugin {
 	settings: LinkPeekSettings = { ...DEFAULT_SETTINGS };
 	cache!: MetadataCache;
+	/** Handles for scripted regression checks via `obsidian eval`; not a public API. */
+	debug!: { hover: HoverController; fetchMetadata: typeof fetchMetadata };
 
 	/** Hover fetches arrive in bursts; coalesce writes instead of hitting disk per link. */
 	private persistCache = debounce(() => void this.saveAll(), 2000, true);
@@ -26,7 +29,8 @@ export default class LinkPeekPlugin extends Plugin {
 		});
 		this.cache.fromJSON(data.cache);
 
-		new HoverController(this, this.cache, () => this.settings, () => this.persistCache());
+		const hover = new HoverController(this, this.cache, () => this.settings, () => this.persistCache());
+		this.debug = { hover, fetchMetadata };
 
 		this.addSettingTab(new LinkPeekSettingTab(this.app, this));
 
@@ -38,6 +42,12 @@ export default class LinkPeekPlugin extends Plugin {
 				await this.saveSettings();
 				new Notice(`Link Peek: ${this.settings.enabled ? "on" : "off"}`);
 			},
+		});
+
+		this.addCommand({
+			id: "preview-link-under-cursor",
+			name: "Preview link under cursor",
+			editorCallback: (editor) => hover.previewAtCursor(editor),
 		});
 
 		this.addCommand({

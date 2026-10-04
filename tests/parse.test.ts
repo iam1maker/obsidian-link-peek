@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeEntities, displayUrl, metadataForNonHtml, parseMetadata } from "../src/metadata/parse";
+import { decodeEntities, displayUrl, headOf, metadataForNonHtml, parseMetadata, textFromHtml } from "../src/metadata/parse";
 
 const BASE = "https://example.com/articles/42";
 
@@ -66,9 +66,10 @@ describe("parseMetadata", () => {
 		expect(meta.image).toBeNull();
 	});
 
-	it("does not scan past the head-size budget", () => {
-		const html = "<html>" + "x".repeat(600 * 1024) + `<meta property="og:title" content="too late">`;
-		expect(parseMetadata(html, BASE).title).toBeNull();
+	it("scans a large head-less document up to the budget, not beyond", () => {
+		const tag = `<meta property="og:title" content="found">`;
+		expect(parseMetadata("<html>" + "x".repeat(900 * 1024) + tag, BASE).title).toBe("found");
+		expect(parseMetadata("<html>" + "x".repeat(2049 * 1024) + tag, BASE).title).toBeNull();
 	});
 });
 
@@ -100,5 +101,30 @@ describe("displayUrl", () => {
 		expect(shown.length).toBe(30);
 		expect(shown.endsWith("…")).toBe(true);
 		expect(displayUrl("https://example.com/%E0%A4%A")).toBe("example.com/%E0%A4%A");
+	});
+});
+
+describe("headOf", () => {
+	it("cuts at </head> even when the head is huge, and caps when there is none", () => {
+		const html = "<head>" + "x".repeat(900_000) + "<title>late</title></head><body>" + "y".repeat(100) + "</body>";
+		const head = headOf(html);
+		expect(head).toContain("<title>late</title>");
+		expect(head).not.toContain("yyy");
+		expect(headOf("a".repeat(3 * 1024 * 1024)).length).toBe(2 * 1024 * 1024);
+	});
+});
+
+describe("oEmbed discovery", () => {
+	it("picks up the json+oembed alternate link, resolved against the page", () => {
+		const html = '<head><link rel="alternate" type="application/json+oembed" href="/oembed?url=x"><title>t</title></head>';
+		expect(parseMetadata(html, "https://example.com/post").oembedUrl).toBe("https://example.com/oembed?url=x");
+		expect(parseMetadata("<head><title>t</title></head>", "https://example.com/").oembedUrl).toBeNull();
+	});
+});
+
+describe("textFromHtml", () => {
+	it("flattens an oEmbed snippet to one line of text", () => {
+		expect(textFromHtml('<blockquote><p lang="en">the bird<br>is freed</p>&mdash; Elon</blockquote>')).toBe("the bird is freed — Elon");
+		expect(textFromHtml("<div></div>")).toBeNull();
 	});
 });

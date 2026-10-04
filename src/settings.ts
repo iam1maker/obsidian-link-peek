@@ -1,10 +1,16 @@
 import { App, Notice, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
 import type LinkPeekPlugin from "./main";
 
+/** Which key must be held for a hover to open a card. "none" means plain hover. */
+export type TriggerModifier = "none" | "Mod" | "Alt" | "Shift";
+
 export interface LinkPeekSettings {
 	enabled: boolean;
 	/** Delay before a popover opens, so sweeping the mouse across text does not flash cards. */
 	hoverDelayMs: number;
+	triggerModifier: TriggerModifier;
+	/** Restart the hover delay whenever the pointer moves, so only a resting pointer opens a card. */
+	requireStillPointer: boolean;
 	cacheTtlDays: number;
 	maxCacheEntries: number;
 	showImages: boolean;
@@ -12,16 +18,27 @@ export interface LinkPeekSettings {
 	excludedDomains: string[];
 	/** Also preview Canvas link nodes and links inside Canvas text nodes. */
 	enableCanvas: boolean;
+	/** Hostnames (suffix match) whose thumbnails are never shown, e.g. image-heavy or NSFW hosts. */
+	noImageDomains: string[];
+	/** How many lines of description the card shows before clamping. */
+	descriptionLines: number;
+	/** Compact cards: favicon, site and title only. */
+	compactCards: boolean;
 }
 
 export const DEFAULT_SETTINGS: LinkPeekSettings = {
 	enabled: true,
 	hoverDelayMs: 350,
+	triggerModifier: "none",
+	requireStillPointer: true,
 	cacheTtlDays: 7,
 	maxCacheEntries: 2000,
 	showImages: true,
 	excludedDomains: [],
 	enableCanvas: true,
+	noImageDomains: [],
+	descriptionLines: 3,
+	compactCards: false,
 };
 
 export const FAILURE_TTL_MS = 60 * 60 * 1000;
@@ -90,9 +107,61 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "Show images",
-				desc: "Render the og:image thumbnail in the card.",
-				control: { type: "toggle", key: "showImages", defaultValue: DEFAULT_SETTINGS.showImages },
+				name: "Trigger key",
+				desc: "Only open cards while this key is held. Pressing it while already hovering a link opens the card too.",
+				aliases: ["modifier", "hold key"],
+				control: {
+					type: "dropdown",
+					key: "triggerModifier",
+					defaultValue: DEFAULT_SETTINGS.triggerModifier,
+					options: {
+						none: "None (plain hover)",
+						Mod: "Cmd (macOS) / Ctrl",
+						Alt: "Option / Alt",
+						Shift: "Shift",
+					},
+				},
+			},
+			{
+				name: "Only when the pointer is still",
+				desc: "Restart the hover delay whenever the pointer moves, so sweeping across text never opens cards.",
+				aliases: ["stillness"],
+				control: { type: "toggle", key: "requireStillPointer", defaultValue: DEFAULT_SETTINGS.requireStillPointer },
+			},
+			{
+				type: "group",
+				heading: "Card",
+				items: [
+					{
+						name: "Show images",
+						desc: "Render the og:image thumbnail in the card.",
+						control: { type: "toggle", key: "showImages", defaultValue: DEFAULT_SETTINGS.showImages },
+					},
+					{
+						name: "Hide images from these domains",
+						desc: "One hostname per line; subdomains are included. Cards from these sites show no thumbnail.",
+						aliases: ["no image", "thumbnail blocklist"],
+						control: { type: "textarea", key: "noImageDomains", placeholder: "example.com", rows: 3 },
+					},
+					{
+						name: "Description lines",
+						desc: "How many lines of description to show before cutting off.",
+						control: {
+							type: "slider",
+							key: "descriptionLines",
+							min: 1,
+							max: 6,
+							step: 1,
+							defaultValue: DEFAULT_SETTINGS.descriptionLines,
+							displayFormat: (value) => `${value} line${value === 1 ? "" : "s"}`,
+						},
+					},
+					{
+						name: "Compact cards",
+						desc: "Show only favicon, site name and title. No image, no description.",
+						control: { type: "toggle", key: "compactCards", defaultValue: DEFAULT_SETTINGS.compactCards },
+					},
+				],
 			},
 			{
 				name: "Preview in Canvas",
@@ -152,12 +221,12 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 
 	getControlValue(key: string): unknown {
 		const value = this.plugin.settings[key as SettingKey];
-		return key === "excludedDomains" && Array.isArray(value) ? value.join("\n") : value;
+		return (key === "excludedDomains" || key === "noImageDomains") && Array.isArray(value) ? value.join("\n") : value;
 	}
 
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		const settings = this.plugin.settings as unknown as Record<string, unknown>;
-		if (key === "excludedDomains") {
+		if (key === "excludedDomains" || key === "noImageDomains") {
 			settings[key] = parseDomainList(String(value ?? ""));
 		} else if (key === "maxCacheEntries") {
 			const parsed = Number(value);
