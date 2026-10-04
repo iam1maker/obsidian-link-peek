@@ -1,6 +1,6 @@
 {
   "name": "obsidian-link-peek",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Hover any external link in Obsidian to see an OpenGraph preview card. Works in Live Preview, Reading view and Canvas. Metadata is fetched through Obsidian's own request pipeline and cached locally.",
   "main": "main.js",
   "scripts": {
