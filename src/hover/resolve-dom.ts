@@ -18,10 +18,11 @@ function isHttpUrl(value: string | null | undefined): value is string {
 /**
  * Rendered Markdown (Reading view, Canvas text nodes, hover popovers): the anchor
  * carries the href. Properties and Bases cells render URLs as
- * `.external-link[data-href]` divs instead of anchors.
+ * `.external-link[data-href]` divs instead of anchors, and Link Peek's own
+ * inline chips carry `data-href` too.
  */
 export function urlFromAnchor(target: Element): string | null {
-	const el = target.closest("a.external-link, a[href^='http://'], a[href^='https://'], .external-link[data-href]");
+	const el = target.closest("a.external-link, a[href^='http://'], a[href^='https://'], .external-link[data-href], .lpk-chip[data-href]");
 	if (!el) return null;
 	const href = el.getAttribute("href") ?? el.getAttribute("data-href");
 	return isHttpUrl(href) ? href : null;

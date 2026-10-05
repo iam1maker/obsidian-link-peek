@@ -1,6 +1,14 @@
 import { App, Notice, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
 import type LinkPeekPlugin from "./main";
 
+/**
+ * Inline titles for bare URLs:
+ * - off: no decoration
+ * - cached: only links whose metadata is already cached (no extra requests)
+ * - fetch: also fetch metadata for links on screen
+ */
+export type InlineTitlesMode = "off" | "cached" | "fetch";
+
 /** Which key must be held for a hover to open a card. "none" means plain hover. */
 export type TriggerModifier = "none" | "Mod" | "Alt" | "Shift";
 
@@ -24,6 +32,13 @@ export interface LinkPeekSettings {
 	descriptionLines: number;
 	/** Compact cards: favicon, site and title only. */
 	compactCards: boolean;
+	inlineTitles: InlineTitlesMode;
+	/** The mode the toggle command restores when turning inline titles back on. */
+	inlineLastMode: Exclude<InlineTitlesMode, "off">;
+	/** Favicon in front of `[text](url)` links. */
+	inlineFavicons: boolean;
+	/** Inline titles longer than this are cut with an ellipsis. */
+	inlineMaxTitle: number;
 }
 
 export const DEFAULT_SETTINGS: LinkPeekSettings = {
@@ -39,6 +54,10 @@ export const DEFAULT_SETTINGS: LinkPeekSettings = {
 	noImageDomains: [],
 	descriptionLines: 3,
 	compactCards: false,
+	inlineTitles: "off",
+	inlineLastMode: "cached",
+	inlineFavicons: false,
+	inlineMaxTitle: 60,
 };
 
 export const FAILURE_TTL_MS = 60 * 60 * 1000;
@@ -164,6 +183,45 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 				],
 			},
 			{
+				type: "group",
+				heading: "Inline links",
+				items: [
+					{
+						name: "Inline link titles",
+						desc: "Show bare URLs as favicon + page title in Live Preview and Reading view. The note itself is not changed; put the cursor on the link to see the URL. \"Fetch\" sends a request to each site whose link is on screen.",
+						aliases: ["chip", "decorate", "rich link"],
+						control: {
+							type: "dropdown",
+							key: "inlineTitles",
+							defaultValue: DEFAULT_SETTINGS.inlineTitles,
+							options: {
+								off: "Off",
+								cached: "Only links already previewed (no extra requests)",
+								fetch: "Fetch titles for links on screen",
+							},
+						},
+					},
+					{
+						name: "Favicons on text links",
+						desc: "Show the site icon in front of [text](url) links. The link text stays as you wrote it.",
+						control: { type: "toggle", key: "inlineFavicons", defaultValue: DEFAULT_SETTINGS.inlineFavicons },
+					},
+					{
+						name: "Maximum title length",
+						desc: "Longer titles are cut with an ellipsis.",
+						control: {
+							type: "slider",
+							key: "inlineMaxTitle",
+							min: 20,
+							max: 120,
+							step: 5,
+							defaultValue: DEFAULT_SETTINGS.inlineMaxTitle,
+							displayFormat: (value) => `${value} characters`,
+						},
+					},
+				],
+			},
+			{
 				name: "Preview in Canvas",
 				desc: "Also show cards for Canvas link nodes and links inside Canvas text nodes.",
 				control: { type: "toggle", key: "enableCanvas", defaultValue: DEFAULT_SETTINGS.enableCanvas },
@@ -208,7 +266,7 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 						name: "Clear cache",
 						desc: `${this.plugin.cache.size} link(s) cached.`,
 						action: () => {
-							this.plugin.cache.clear();
+							this.plugin.service.clear();
 							void this.plugin.saveSettings();
 							new Notice("Link Peek: cache cleared");
 							this.update();
@@ -234,6 +292,7 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 			settings[key] = parsed;
 		} else {
 			settings[key] = value;
+			if (key === "inlineTitles" && value !== "off") settings.inlineLastMode = value;
 		}
 		await this.plugin.saveSettings();
 	}

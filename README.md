@@ -9,6 +9,7 @@ Inspired by [logseq-plugin-link-preview](https://github.com/pengx17/logseq-plugi
 - **Caches locally** (`data.json`) with a configurable lifetime and size; failed lookups are retried after an hour.
 - **Never modifies your notes** — the card is pure rendering.
 - Follows your theme (light/dark) via Obsidian CSS variables.
+- Optional **inline link titles**: bare URLs shown as favicon + page title in Live Preview and Reading view, without changing the note (see below).
 
 ## Install
 
@@ -22,6 +23,8 @@ Inspired by [logseq-plugin-link-preview](https://github.com/pengx17/logseq-plugi
 
 When you hover an external link, Link Peek sends a single GET request **to that link's host** to read its `<head>` metadata, with a desktop-browser User-Agent. Nothing is sent anywhere else: there is no telemetry and no intermediary service. Thumbnails and favicons are loaded by the card directly from the site (with `referrerpolicy="no-referrer"`). Use **Excluded domains** in settings to opt specific hosts out, or turn previews off entirely with the *Toggle hover previews* command.
 
+Inline link titles make **no requests** by default: in the *Only links already previewed* mode they only use what hovering has already cached. The *Fetch titles for links on screen* mode is opt-in; it sends the same single GET to each site whose link is visible, after you stop scrolling, two at a time.
+
 ## Settings
 
 | Setting | Default | Notes |
@@ -34,14 +37,28 @@ When you hover an external link, Link Peek sends a single GET request **to that 
 | Hide images from these domains | — | One hostname per line; cards from these sites show no thumbnail |
 | Description lines | 3 | Lines of description before the card cuts off |
 | Compact cards | off | Favicon, site and title only |
+| Inline link titles | Off | Off / Only links already previewed (no extra requests) / Fetch titles for links on screen |
+| Favicons on text links | off | Site icon in front of `[text](url)` links; the link text is kept |
+| Maximum title length | 60 | Longer inline titles are cut with an ellipsis |
 | Preview in Canvas | on | Cards for Canvas link nodes and links inside text nodes |
 | Excluded domains | — | One hostname per line; subdomains are included |
 | Cache lifetime | 7 days | Failures are retried after an hour regardless |
 | Maximum cached links | 2000 | Least recently used entries are dropped beyond this |
 
-Commands: **Preview link under cursor** (opens the card pinned, next to the caret; also the way to use Link Peek on touch devices), **Toggle hover previews**, **Clear metadata cache**.
+Commands: **Preview link under cursor** (opens the card pinned, next to the caret; also the way to use Link Peek on touch devices), **Toggle hover previews**, **Toggle inline link titles**, **Clear metadata cache**.
 
 **Pinning.** The pin button in the card header keeps it open while you move away, click elsewhere or type, so you can select its text or follow it later. Other links do not replace a pinned card. `Esc` or the close button dismisses it.
+
+## Inline link titles
+
+With *Inline link titles* on, a bare URL such as `https://github.com/iam1maker/obsidian-link-peek` is displayed as the site's favicon followed by the page title. The Markdown source is never changed:
+
+- Put the cursor on the link (or **Alt/Option-click** it) and the raw URL comes back for editing.
+- Click opens the link, hover shows the full card, right-click offers *Open link*, *Preview card*, *Copy URL* and *Edit URL*.
+- `[text](url)` links keep the text you wrote; turn on *Favicons on text links* to get the site icon in front of them.
+- Code, comments, images and URLs Obsidian itself does not treat as links are left alone.
+- Works in Live Preview (including callouts and tables), Reading view, Canvas text cards and pop-out windows. Source mode always shows raw Markdown.
+- Turn it off for one note with the property `link-peek: off`.
 
 ## How it works
 

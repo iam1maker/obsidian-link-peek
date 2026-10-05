@@ -1,7 +1,6 @@
 import { Component, type Editor, Notice, Platform, type Plugin } from "obsidian";
 import type { EditorView } from "@codemirror/view";
-import type { MetadataCache } from "../cache";
-import { fetchMetadata } from "../metadata/fetch";
+import type { MetadataService } from "../metadata/service";
 import type { MetadataResult } from "../metadata/types";
 import { isExcluded, type LinkPeekSettings } from "../settings";
 import { asElement, LinkPopover, type PopoverState } from "./popover";
@@ -50,13 +49,11 @@ export class HoverController {
 	private currentAnchor: Element | null = null;
 	/** Last pointer position we acted on; movement is measured from here. */
 	private lastPointer: Point | null = null;
-	private inflight = new Map<string, Promise<MetadataResult>>();
 
 	constructor(
 		private plugin: Plugin,
-		private cache: MetadataCache,
+		private service: MetadataService,
 		private settings: () => LinkPeekSettings,
-		private onCacheChanged: () => void,
 	) {
 		const { workspace } = plugin.app;
 
@@ -242,6 +239,14 @@ export class HoverController {
 		void this.open(popover, url, null, cursorRect(editor, cm, cursor));
 	}
 
+	/** Open a pinned card for a URL next to an element (inline chip context menu). */
+	previewElement(url: string, el: Element): void {
+		this.hideNow(true);
+		const popover = this.popoverFor(el.ownerDocument);
+		popover.setPinned(true);
+		void this.open(popover, url, el, el.getBoundingClientRect());
+	}
+
 	private startShowTimer(): void {
 		this.cancelShow();
 		this.showTimer = window.setTimeout(() => {
@@ -260,14 +265,14 @@ export class HoverController {
 		this.currentUrl = url;
 		this.currentAnchor = anchor;
 
-		const cached = this.cache.get(url);
+		const cached = this.service.get(url);
 		if (cached) {
 			popover.show(anchorRect, toState(url, cached));
 			return;
 		}
 
 		popover.show(anchorRect, { kind: "loading", url });
-		const result = await this.lookup(url);
+		const result = await this.service.lookup(url);
 		// The pointer may have moved on while we were fetching.
 		if (this.currentUrl !== url || this.active !== popover) return;
 		popover.update(toState(url, result));
@@ -276,25 +281,10 @@ export class HoverController {
 	/** Retry button on an error card: drop the cached failure and fetch again in place. */
 	private async retry(popover: LinkPopover, url: string): Promise<void> {
 		if (this.active !== popover || this.currentUrl !== url) return;
-		this.cache.delete(url);
 		popover.update({ kind: "loading", url });
-		const result = await this.lookup(url);
+		const result = await this.service.refresh(url);
 		if (this.currentUrl !== url || this.active !== popover) return;
 		popover.update(toState(url, result));
-	}
-
-	private lookup(url: string): Promise<MetadataResult> {
-		const existing = this.inflight.get(url);
-		if (existing) return existing;
-		const promise = fetchMetadata(url)
-			.then((result) => {
-				this.cache.set(url, result);
-				this.onCacheChanged();
-				return result;
-			})
-			.finally(() => this.inflight.delete(url));
-		this.inflight.set(url, promise);
-		return promise;
 	}
 
 	private scheduleHide(): void {
@@ -360,7 +350,7 @@ function cursorRect(editor: Editor, cm: EditorView | null, cursor: { line: numbe
  * (whose element is the whole `.cm-line`) anchor to the pointer instead.
  */
 function anchorRectFor(target: Element, event: MouseEvent): DOMRect {
-	const anchor = target.closest("a, .canvas-node") ?? target;
+	const anchor = target.closest("a, .lpk-chip, .canvas-node") ?? target;
 	const rect = anchor.getBoundingClientRect();
 	if (rect.width > 0 && rect.width < 600 && rect.height < 200) return rect;
 	return new DOMRect(event.clientX, event.clientY - 10, 1, 20);

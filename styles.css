@@ -212,3 +212,30 @@
 	-webkit-line-clamp: 1;
 	word-break: break-all;
 }
+
+/* Inline link titles: a bare URL shown as favicon + title. Inherits the theme's external-link look. */
+.lpk-chip {
+	color: var(--link-external-color);
+	text-decoration-line: var(--link-external-decoration);
+	cursor: var(--cursor-link, pointer);
+}
+
+.lpk-chip:hover {
+	color: var(--link-external-color-hover);
+	text-decoration-line: var(--link-external-decoration-hover);
+}
+
+.lpk-chip-icon,
+.lpk-link-icon {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	margin-right: 0.25em;
+	vertical-align: -0.125em;
+	border-radius: 2px;
+	object-fit: contain;
+}
+
+.lpk-link-icon-wrap {
+	cursor: var(--cursor-link, pointer);
+}

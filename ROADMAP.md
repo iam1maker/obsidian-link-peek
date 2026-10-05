@@ -1,6 +1,6 @@
 # Link Peek roadmap
 
-Last reviewed: 2026-10-05. Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
+Last reviewed: 2026-10-06. Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
 
 ## Positioning
 
@@ -71,7 +71,7 @@ Regression fixtures in the ob-mxl vault: `inbox/Link Peek 测试.canvas` (Canvas
 
 Two candidate shapes. A first, B only if there is real demand.
 
-**A. Inline decoration (non-destructive, preferred).** A CodeMirror 6 `ViewPlugin` renders bare
+**A. Inline decoration (non-destructive, preferred).** Released as 0.3.0 on 2026-10-06; design and prior-art notes in [docs/inline-decoration.md](docs/inline-decoration.md). A CodeMirror 6 `ViewPlugin` renders bare
 URLs and `[text](url)` links as favicon + title, restores the raw text while the cursor is inside,
 and a Reading-view post-processor does the same for rendered output. Reuses the existing cache
 and parser; writes nothing. Differentiator: URL Enricher stops at Live Preview and has no hover.
