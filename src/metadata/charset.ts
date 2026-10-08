@@ -10,7 +10,7 @@
 const SNIFF_BYTES = 4096;
 
 const HEADER_CHARSET_RE = /charset\s*=\s*["']?\s*([^"';\s]+)/i;
-const META_CHARSET_RE = /<meta\b[^>]*\bcharset\s*=\s*["']?\s*([^"'\s;>\/]+)/i;
+const META_CHARSET_RE = /<meta\b[^>]*\bcharset\s*=\s*["']?\s*([^"'\s;>/]+)/i;
 const META_HTTP_EQUIV_RE = /<meta\b[^>]*http-equiv\s*=\s*["']?content-type["']?[^>]*content\s*=\s*["']([^"']*)["']/i;
 
 export function charsetFromHeader(contentType: string | null | undefined): string | null {

@@ -3,7 +3,7 @@ import { Prec, type Range, StateEffect, type EditorState } from "@codemirror/sta
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from "@codemirror/view";
 import { editorInfoField, editorLivePreviewField } from "obsidian";
 import { isExcluded } from "../settings";
-import { appendIcon, fillChip, openUrl, showLinkMenu } from "./chip";
+import { appendIcon, fillChip, openUrl, showLinkMenu, spanFor } from "./chip";
 import { classifyNode, isHttpUrl, markdownLinkStart, touches, type UrlNodeKind } from "./classify";
 import type { InlineContext } from "./context";
 import { chipLabel, type ChipLabel } from "./label";
@@ -32,8 +32,7 @@ class ChipWidget extends WidgetType {
 	}
 
 	toDOM(view: EditorView): HTMLElement {
-		const el = view.dom.ownerDocument.createElement("span");
-		el.className = "lpk-chip";
+		const el = spanFor(view.dom, "lpk-chip");
 		el.dataset.href = this.url;
 		fillChip(el, this.label);
 		// Same click model as Obsidian's own links: click opens, Alt/Option-click edits.
@@ -73,8 +72,7 @@ class FaviconWidget extends WidgetType {
 	}
 
 	toDOM(view: EditorView): HTMLElement {
-		const wrap = view.dom.ownerDocument.createElement("span");
-		wrap.className = "lpk-link-icon-wrap";
+		const wrap = spanFor(view.dom, "lpk-link-icon-wrap");
 		appendIcon(wrap, this.src, "lpk-link-icon");
 		wrap.addEventListener("click", (event) => {
 			event.preventDefault();

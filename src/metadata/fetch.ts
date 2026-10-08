@@ -47,7 +47,7 @@ function headerValue(headers: Record<string, string>, name: string): string | nu
 }
 
 /** GET a JSON endpoint; null on any failure, callers always have a fallback. */
-export async function fetchJson(url: string): Promise<unknown | null> {
+export async function fetchJson(url: string): Promise<unknown> {
 	try {
 		const response = await timeout(
 			requestUrl({ url, method: "GET", headers: { Accept: "application/json", "User-Agent": USER_AGENT }, throw: false }),

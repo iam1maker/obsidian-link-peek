@@ -9,7 +9,7 @@ import type { LinkMetadata } from "./types";
  *   OG tags are missing (X when it serves the JS shell, blogs without OG)
  */
 
-export type JsonFetcher = (url: string) => Promise<unknown | null>;
+export type JsonFetcher = (url: string) => Promise<unknown>;
 export type SiteResolver = (url: string, fetchJson: JsonFetcher) => Promise<LinkMetadata | null>;
 
 interface OembedLike {

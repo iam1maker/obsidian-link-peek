@@ -158,8 +158,10 @@
 	word-break: break-word;
 }
 
+/* Bottom spacing is a margin: overflow clips at the padding edge, so bottom padding would show part of the next line */
 .lpk-desc {
-	padding: 4px 12px 12px;
+	padding: 4px 12px 0;
+	margin-bottom: 12px;
 	color: var(--text-muted);
 	display: -webkit-box;
 	-webkit-line-clamp: var(--lpk-desc-lines, 3);
@@ -216,13 +218,13 @@
 /* Inline link titles: a bare URL shown as favicon + title. Inherits the theme's external-link look. */
 .lpk-chip {
 	color: var(--link-external-color);
-	text-decoration-line: var(--link-external-decoration);
+	text-decoration: var(--link-external-decoration);
 	cursor: var(--cursor-link, pointer);
 }
 
 .lpk-chip:hover {
 	color: var(--link-external-color-hover);
-	text-decoration-line: var(--link-external-decoration-hover);
+	text-decoration: var(--link-external-decoration-hover);
 }
 
 .lpk-chip-icon,

@@ -4,7 +4,7 @@
 	"version": "0.3.0",
 	"minAppVersion": "1.13.0",
 	"description": "Hover any external link to see an OpenGraph preview card. Works in Live Preview, Reading view and Canvas; metadata is cached locally.",
-	"author": "iam1maker",
+	"author": "1maker",
 	"authorUrl": "https://github.com/iam1maker",
 	"isDesktopOnly": false
 }

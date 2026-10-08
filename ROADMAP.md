@@ -1,6 +1,6 @@
 # Link Peek roadmap
 
-Last reviewed: 2026-10-06. Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
+Last reviewed: 2026-10-08 (0.3.1 review fixes). Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
 
 ## Positioning
 
@@ -80,6 +80,37 @@ and parser; writes nothing. Differentiator: URL Enricher stops at Live Preview a
 block that is format-compatible with Auto Card Link's `cardlink` block so existing notes from
 that (unmaintained) plugin render with Link Peek. Paste-to-card stays off by default.
 
+## 0.4 — block cards for standalone links (planned, not scheduled)
+
+Decided 2026-10-06: worth doing, not started. Pick it up only when the user asks.
+
+**What.** A URL alone on its own line (nothing else on the line, outside code) renders as a full
+card in Live Preview, Reading view and Canvas text cards: image, title, description, site, the
+same look as the hover card. A URL inside a sentence keeps the 0.3 inline title. Close to
+Notion's bookmark block. The note still contains only the URL; uninstalling leaves nothing behind.
+
+**Why this shape and not a card written into the note.** "Never modifies your notes" is the
+main difference from Link Embed (109k downloads, third-party services, writes HTML) and Auto
+Card Link (80k, unmaintained, writes a `cardlink` block). Writing cards would join a crowded
+field and break that promise. No plugin today shows non-destructive block cards across Live
+Preview, Reading view and Canvas; URL Enricher's card style is Live Preview only.
+
+**Reuse.** Cache, fetch pipeline, the Off / cached / fetch modes, the per-note
+`link-peek: off` switch, click and right-click behaviour, card styles from the hover popover.
+
+**Known work.**
+- Block decorations cannot come from a `ViewPlugin` in CodeMirror; Live Preview needs a
+  `StateField` that recomputes on doc changes and on the cache-change signal.
+- Layout shift when a card appears or its image loads. Default to cached-only, give cards a
+  fixed height, reserve the image box before it loads.
+- Caret on the line reveals the raw URL, same rule as the inline titles.
+- Settings: a toggle ("Show standalone links as cards"), image on/off reusing the existing
+  per-domain thumbnail list, compact variant reusing the compact-card setting.
+
+**Idea for later, separate from 0.4.** Render existing Auto Card Link `cardlink` code blocks
+read-only, so its users can switch without rewriting notes. Both plugins would register the
+same code-block language; Link Peek must stand down when Auto Card Link is enabled.
+
 ## Non-goals
 
 - Live page previews via webview or iframe. Hoverlay and URL Preview own that niche.
@@ -93,6 +124,13 @@ that (unmaintained) plugin render with Link Peek. Paste-to-card stays off by def
 - Unit tests cover parsing, cache and editor URL resolution only. The four hover paths are
   verified by hand. Add CDP-driven regression scripts (synthetic `mouseover` through
   `obsidian dev:cdp`) before 0.3 adds a second rendering surface.
+- [x] Community directory review findings from the 0.3.0 review, fixed together in 0.3.1
+  (2026-10-08): needless regex escape, `unknown | null` return types, the deprecated
+  `caretRangeFromPoint` fallback, `document.createElement` in the inline widgets (now created
+  through the owning window's `createSpan`, checked in a pop-out), the `text-decoration-line`
+  CSS lint (now the single-value `text-decoration` shorthand), and the clipboard note in the
+  README. Before a release, run the `eslint-plugin-obsidianmd` recommended config locally; the
+  remaining `ui/sentence-case` hits are false positives (the product name "Link Peek").
 - `requestUrl` cannot stream or abort; large non-HTML responses are downloaded in full before
   the content-type check. Acceptable for now; revisit if PDF links become common.
 

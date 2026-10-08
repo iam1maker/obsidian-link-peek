@@ -7,6 +7,17 @@ goes through the humanizer pass before it lands here.
 The forum account cannot post links yet, so entries point to the GitHub releases page in
 words instead of with a URL.
 
+## 0.3.1 (2026-10-08)
+
+0.3.1 is a small fix release.
+
+- Card descriptions now stop cleanly at the line limit. Before, the top of the next line peeked out under the last one.
+- Cleanups from the community directory's automated review. None of them change how the plugin behaves.
+- The README says what the plugin does with the clipboard: it never reads it, and only "Copy URL" in an inline link's right-click menu writes to it.
+- The README has screenshots now.
+
+Release notes are on the GitHub releases page, tag 0.3.1 (repo link is in the first post; this account can't post links yet).
+
 ## 0.3.0 (2026-10-06)
 
 0.3.0 is out. The main addition is inline link titles, off by default.

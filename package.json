@@ -16,7 +16,7 @@
     "link-preview",
     "opengraph"
   ],
-  "author": "iam1maker",
+  "author": "1maker",
   "license": "MIT",
   "devDependencies": {
     "@codemirror/language": "^6.12.4",

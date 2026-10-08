@@ -3,6 +3,8 @@
 Hover any external link in Obsidian and peek at it: an OpenGraph preview card with title, description, image, favicon and site name.
 Inspired by [logseq-plugin-link-preview](https://github.com/pengx17/logseq-plugin-link-preview).
 
+![Hover card for a Wikipedia link in Live Preview](https://raw.githubusercontent.com/iam1maker/obsidian-link-peek/main/docs/images/hover-card.png)
+
 - Works in **Live Preview**, **Source mode**, **Reading view**, **Canvas** (link nodes and links inside text nodes), **Properties**, **Bases** cells, plain-text URLs in sidebars (search results, backlinks) and **pop-out windows**.
 - Fetches metadata through Obsidian's own `requestUrl` — no third-party preview service, no API keys, no CORS trouble. Pages are decoded with their declared charset, so GBK / Big5 / Shift_JIS sites render correctly.
 - Fills gaps with the page's own oEmbed endpoint when OG tags are missing, and uses the public JSON APIs of Wikipedia (real article extract) and Reddit (post title and author) whose HTML is useless to a non-browser.
@@ -24,6 +26,8 @@ Inspired by [logseq-plugin-link-preview](https://github.com/pengx17/logseq-plugi
 When you hover an external link, Link Peek sends a single GET request **to that link's host** to read its `<head>` metadata, with a desktop-browser User-Agent. Nothing is sent anywhere else: there is no telemetry and no intermediary service. Thumbnails and favicons are loaded by the card directly from the site (with `referrerpolicy="no-referrer"`). Use **Excluded domains** in settings to opt specific hosts out, or turn previews off entirely with the *Toggle hover previews* command.
 
 Inline link titles make **no requests** by default: in the *Only links already previewed* mode they only use what hovering has already cached. The *Fetch titles for links on screen* mode is opt-in; it sends the same single GET to each site whose link is visible, after you stop scrolling, two at a time.
+
+The plugin never reads the clipboard. It writes to it in one place: *Copy URL* in an inline link's right-click menu puts that link's URL there.
 
 ## Settings
 
@@ -52,6 +56,8 @@ Commands: **Preview link under cursor** (opens the card pinned, next to the care
 ## Inline link titles
 
 With *Inline link titles* on, a bare URL such as `https://github.com/iam1maker/obsidian-link-peek` is displayed as the site's favicon followed by the page title. The Markdown source is never changed:
+
+![Bare URLs shown as favicon and page title](https://raw.githubusercontent.com/iam1maker/obsidian-link-peek/main/docs/images/inline-titles.png)
 
 - Put the cursor on the link (or **Alt/Option-click** it) and the raw URL comes back for editing.
 - Click opens the link, hover shows the full card, right-click offers *Open link*, *Preview card*, *Copy URL* and *Edit URL*.

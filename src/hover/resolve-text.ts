@@ -13,22 +13,17 @@ interface CaretHit {
 	offset: number;
 }
 
+/** Declared here so the code does not depend on the TypeScript DOM lib being new enough. */
 type DocWithCaret = Document & {
 	caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null;
-	caretRangeFromPoint?: (x: number, y: number) => Range | null;
 };
 
 function caretAt(doc: Document, x: number, y: number): CaretHit | null {
 	const d = doc as DocWithCaret;
-	if (typeof d.caretPositionFromPoint === "function") {
-		const pos = d.caretPositionFromPoint(x, y);
-		return pos ? { node: pos.offsetNode, offset: pos.offset } : null;
-	}
-	if (typeof d.caretRangeFromPoint === "function") {
-		const range = d.caretRangeFromPoint(x, y);
-		return range ? { node: range.startContainer, offset: range.startOffset } : null;
-	}
-	return null;
+	// Feature-detected for older mobile WebViews, which have no hover to serve anyway.
+	if (typeof d.caretPositionFromPoint !== "function") return null;
+	const pos = d.caretPositionFromPoint(x, y);
+	return pos ? { node: pos.offsetNode, offset: pos.offset } : null;
 }
 
 /** Contexts where a URL in text is being edited or is already handled elsewhere. */

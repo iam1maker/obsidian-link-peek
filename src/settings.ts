@@ -285,7 +285,7 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		const settings = this.plugin.settings as unknown as Record<string, unknown>;
 		if (key === "excludedDomains" || key === "noImageDomains") {
-			settings[key] = parseDomainList(String(value ?? ""));
+			settings[key] = parseDomainList(typeof value === "string" ? value : "");
 		} else if (key === "maxCacheEntries") {
 			const parsed = Number(value);
 			if (!Number.isInteger(parsed) || parsed < MIN_CACHE_ENTRIES) return;

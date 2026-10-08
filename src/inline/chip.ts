@@ -1,6 +1,14 @@
 import { Menu, Notice } from "obsidian";
 import type { ChipLabel } from "./label";
 
+/**
+ * A detached `<span>` owned by the window `near` lives in. Obsidian installs its DOM
+ * helpers on every window, so a pop-out gets nodes from its own document.
+ */
+export function spanFor(near: Node, cls: string): HTMLSpanElement {
+	return (near.win as Window & { createSpan: typeof createSpan }).createSpan({ cls });
+}
+
 /** Fill an element with favicon + title. Shared by the Live Preview widget and Reading view anchors. */
 export function fillChip(el: HTMLElement, label: ChipLabel): void {
 	el.empty();
