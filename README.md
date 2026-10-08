@@ -3,7 +3,7 @@
 Hover any external link in Obsidian and peek at it: an OpenGraph preview card with title, description, image, favicon and site name.
 Inspired by [logseq-plugin-link-preview](https://github.com/pengx17/logseq-plugin-link-preview).
 
-![Hover card for a Wikipedia link in Live Preview](https://raw.githubusercontent.com/iam1maker/obsidian-link-peek/main/docs/images/hover-card.png)
+![Link Peek demo: bare URLs become page titles, hovering shows a preview card](https://raw.githubusercontent.com/iam1maker/obsidian-link-peek/main/docs/images/demo.gif)
 
 - Works in **Live Preview**, **Source mode**, **Reading view**, **Canvas** (link nodes and links inside text nodes), **Properties**, **Bases** cells, plain-text URLs in sidebars (search results, backlinks) and **pop-out windows**.
 - Fetches metadata through Obsidian's own `requestUrl` — no third-party preview service, no API keys, no CORS trouble. Pages are decoded with their declared charset, so GBK / Big5 / Shift_JIS sites render correctly.
@@ -12,6 +12,8 @@ Inspired by [logseq-plugin-link-preview](https://github.com/pengx17/logseq-plugi
 - **Never modifies your notes** — the card is pure rendering.
 - Follows your theme (light/dark) via Obsidian CSS variables.
 - Optional **inline link titles**: bare URLs shown as favicon + page title in Live Preview and Reading view, without changing the note (see below).
+
+![Hover card for a Wikipedia link in Live Preview](https://raw.githubusercontent.com/iam1maker/obsidian-link-peek/main/docs/images/hover-card.png)
 
 ## Install
 

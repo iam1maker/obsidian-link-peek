@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=960, height=640" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 960px;
+        height: 640px;
+        overflow: hidden;
+        background: #f3f0fb;
+      }
+      :root {
+        /* Obsidian default light theme */
+        --background-primary: #ffffff;
+        --background-secondary: #f6f6f6;
+        --text-normal: #222222;
+        --text-muted: #5c5c5c;
+        --text-faint: #767676;
+        --accent: rgb(124, 77, 226);
+        --accent-hover: rgb(104, 58, 205);
+        --border: #e3e3e3;
+        --font: system-ui, sans-serif;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        font-family: var(--font);
+        color: var(--text-normal);
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #efeafc 60%, #e6dffa 100%);
+      }
+
+      /* Caption */
+      .caption-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 20px;
+        height: 40px;
+      }
+      .caption {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: #2a2140;
+        opacity: 0;
+      }
+      .caption .key {
+        display: inline-block;
+        margin: 0 2px;
+        padding: 1px 8px;
+        border: 1px solid #cfc6ea;
+        border-bottom-width: 2px;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      /* Window */
+      .window {
+        position: absolute;
+        left: 70px;
+        top: 76px;
+        width: 820px;
+        height: 540px;
+        background: var(--background-primary);
+        border-radius: 12px;
+        border: 1px solid #d9d3ec;
+        box-shadow: 0 20px 50px rgba(60, 40, 120, 0.18), 0 2px 8px rgba(60, 40, 120, 0.08);
+        overflow: hidden;
+      }
+      .titlebar {
+        height: 40px;
+        background: var(--background-secondary);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: flex-end;
+        padding: 0 14px;
+        gap: 18px;
+      }
+      .lights {
+        display: flex;
+        gap: 8px;
+        align-self: center;
+      }
+      .lights span {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: block;
+      }
+      .tab {
+        height: 32px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--background-primary);
+        border: 1px solid var(--border);
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        font-size: 13px;
+        color: var(--text-normal);
+        margin-bottom: -1px;
+      }
+      .tab svg {
+        width: 14px;
+        height: 14px;
+        color: var(--text-muted);
+      }
+      .editor {
+        position: relative;
+        padding: 30px 70px 0;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .inline-title {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        margin-bottom: 18px;
+      }
+      .line {
+        position: relative;
+        min-height: 24px;
+        white-space: nowrap;
+      }
+      .gap {
+        height: 14px;
+      }
+      .bullet {
+        display: inline-block;
+        width: 22px;
+        color: var(--text-faint);
+        text-align: center;
+        margin-left: 6px;
+      }
+
+      /* A link slot: raw URL and chip share one grid cell */
+      .slot {
+        position: relative;
+        display: inline-grid;
+        vertical-align: top;
+      }
+      .slot > .raw,
+      .slot > .lpk-chip {
+        grid-area: 1 / 1;
+      }
+      .raw {
+        color: var(--accent);
+        text-decoration: underline;
+        text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+        text-underline-offset: 2px;
+      }
+      .lpk-chip {
+        color: var(--accent);
+        opacity: 0;
+        white-space: nowrap;
+      }
+      .lpk-chip.is-hover .lpk-chip-title {
+        color: var(--accent-hover);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .lpk-chip-icon {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        margin-right: 0.3em;
+        vertical-align: -0.14em;
+        border-radius: 2px;
+        object-fit: contain;
+      }
+      .caret {
+        position: absolute;
+        top: 2px;
+        right: -2px;
+        width: 2px;
+        height: 20px;
+        background: var(--text-normal);
+        opacity: 0;
+      }
+
+      /* Hover card: copied from Link Peek's styles.css */
+      .lpk-popover {
+        position: absolute;
+        left: -8px;
+        top: 30px;
+        z-index: 5;
+        width: 360px;
+        overflow: hidden;
+        background: var(--background-primary);
+        color: var(--text-normal);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0px 1.8px 7.3px rgba(0, 0, 0, 0.071), 0px 6.3px 24.7px rgba(0, 0, 0, 0.112),
+          0px 15px 30px rgba(0, 0, 0, 0.1);
+        font-size: 13px;
+        line-height: 1.4;
+        white-space: normal;
+        opacity: 0;
+      }
+      .lpk-image {
+        width: 100%;
+        aspect-ratio: 1.91 / 1;
+        background: var(--background-secondary);
+        overflow: hidden;
+      }
+      .lpk-image img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .lpk-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px 0;
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+      .lpk-favicon {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        object-fit: contain;
+      }
+      .lpk-site {
+        flex: 1 1 auto;
+      }
+      .lpk-action {
+        display: inline-flex;
+        color: var(--text-muted);
+      }
+      .lpk-action svg {
+        width: 14px;
+        height: 14px;
+      }
+      .lpk-title {
+        padding: 6px 12px 0;
+        font-weight: 600;
+      }
+      .lpk-desc {
+        padding: 4px 12px 0;
+        margin-bottom: 12px;
+        color: var(--text-muted);
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Pointer */
+      .pointer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 26px;
+        height: 26px;
+        z-index: 20;
+      }
+      .pointer svg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 26px;
+        height: 26px;
+        filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+      }
+      .pointer .hand {
+        opacity: 0;
+      }
+      .ripple {
+        position: absolute;
+        left: -14px;
+        top: -14px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid var(--accent);
+        opacity: 0;
+      }
+      .optkey {
+        position: absolute;
+        left: 24px;
+        top: 22px;
+        padding: 1px 7px;
+        border-radius: 5px;
+        background: #2a2140;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        opacity: 0;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="11" data-width="960" data-height="640">
+      <div id="stage" class="clip" data-start="0" data-duration="11" data-track-index="0">
+        <div class="caption-row">
+          <div class="caption" id="cap1">Bare URLs show up as page titles</div>
+          <div class="caption" id="cap2">Hover a link for a preview card</div>
+          <div class="caption" id="cap3"><span class="key">⌥ Option</span>-click to edit. The note keeps the plain URL.</div>
+        </div>
+
+        <div class="window">
+          <div class="titlebar">
+            <div class="lights">
+              <span style="background: #ff5f57"></span><span style="background: #febc2e"></span
+              ><span style="background: #28c840"></span>
+            </div>
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              </svg>
+              Weekend reading
+            </div>
+          </div>
+
+          <div class="editor" id="editor">
+            <div class="inline-title">Weekend reading</div>
+
+            <div class="line">
+              Paul Graham on doing great work:
+              <span class="slot" id="s1"
+                ><span class="raw">https://paulgraham.com/greatwork.html</span
+                ><span class="lpk-chip"><img class="lpk-chip-icon" src="assets/pg.png" alt="" /><span class="lpk-chip-title" data-layout-allow-occlusion>How to Do Great Work</span></span></span
+              >
+            </div>
+            <div class="gap"></div>
+
+            <div class="line">
+              <span class="bullet" data-layout-allow-occlusion>•</span
+              ><span class="slot" id="s2"
+                ><span class="raw">https://en.wikipedia.org/wiki/Obsidian_(software)</span
+                ><span class="lpk-chip" id="wikiChip"><img class="lpk-chip-icon" src="assets/wikipedia-touch.png" alt="" /><span class="lpk-chip-title" data-layout-allow-occlusion>Obsidian (software)</span></span>
+                <div class="lpk-popover" id="card" data-layout-allow-occlusion>
+                  <div class="lpk-image"><img src="assets/obsidian-logo.png" alt="" /></div>
+                  <div class="lpk-header">
+                    <img class="lpk-favicon" src="assets/wikipedia-touch.png" alt="" />
+                    <span class="lpk-site">Wikipedia</span>
+                    <span class="lpk-action"
+                      ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 17v5" />
+                        <path
+                          d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
+                        /></svg
+                    ></span>
+                    <span class="lpk-action"
+                      ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h6v6" />
+                        <path d="M10 14 21 3" />
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg
+                    ></span>
+                    <span class="lpk-action"
+                      ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" /></svg
+                    ></span>
+                  </div>
+                  <div class="lpk-title">Obsidian (software)</div>
+                  <div class="lpk-desc" data-layout-allow-overflow>
+                    Obsidian is a proprietary personal knowledge base and note-taking application that operates on Markdown
+                    files. The software is free for personal and commercial use; only the offered cloud services, optional
+                    commercial licenses, and early access versions are paid.
+                  </div>
+                </div></span
+              >
+            </div>
+            <div class="line" data-layout-allow-occlusion>
+              <span class="bullet" data-layout-allow-occlusion>•</span
+              ><span class="slot" id="s3"
+                ><span class="raw">https://docs.obsidian.md/Home</span
+                ><span class="lpk-chip"><img class="lpk-chip-icon" src="assets/obsidian-docs.png" alt="" /><span class="lpk-chip-title" data-layout-allow-occlusion>Home - Developer Documentation</span></span></span
+              >
+            </div>
+            <div class="line" data-layout-allow-occlusion>
+              <span class="bullet" data-layout-allow-occlusion>•</span
+              ><span class="slot" id="s4"
+                ><span class="raw">https://github.com/pengx17/logseq-plugin-link-preview</span
+                ><span class="lpk-chip"><img class="lpk-chip-icon" src="assets/github.svg" alt="" /><span class="lpk-chip-title" data-layout-allow-occlusion>GitHub - pengx17/logseq-plugin-link-preview</span></span></span
+              >
+            </div>
+            <div class="gap"></div>
+
+            <div class="line" id="lastLine" data-layout-allow-occlusion>
+              The plugin itself:
+              <span class="slot" id="s5"
+                ><span class="raw">https://github.com/iam1maker/obsidian-link-peek</span
+                ><span class="lpk-chip" id="repoChip"><img class="lpk-chip-icon" src="assets/github.svg" alt="" /><span class="lpk-chip-title" data-layout-allow-occlusion>GitHub - iam1maker/obsidian-link-peek</span></span
+                ><span class="caret" id="caret"></span></span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="pointer" id="pointer">
+          <div class="ripple" id="ripple"></div>
+          <svg class="arrow" viewBox="0 0 24 24">
+            <path d="M4 2.5v17.2l4.6-4.3 2.9 6.6 3.1-1.4-2.9-6.5h6.3z" fill="#111" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" />
+          </svg>
+          <svg class="hand" viewBox="0 0 24 24">
+            <path
+              d="M9 3.5a1.6 1.6 0 0 1 3.2 0V10l.3-.1a1.6 1.6 0 0 1 2.9.6l.2-.1a1.6 1.6 0 0 1 2.8.8 1.6 1.6 0 0 1 2.4 1.4v4.6c0 3.1-2.3 5.6-5.4 5.6h-2c-1.6 0-3-.7-4-2l-3.6-4.6a1.6 1.6 0 0 1 2.4-2.1L9 15.3Z"
+              fill="#111"
+              stroke="#fff"
+              stroke-width="1.3"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <div class="optkey" id="optkey" data-layout-allow-overflow>⌥ Option</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.getElementById("root");
+      const q = (s) => document.querySelector(s);
+      const qa = (s) => Array.from(document.querySelectorAll(s));
+
+      // Pointer targets, measured once from the static layout (relative to #root).
+      const rootBox = root.getBoundingClientRect();
+      const spot = (el, fx, fy) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.left - rootBox.left + r.width * fx, y: r.top - rootBox.top + r.height * fy };
+      };
+      const wikiTitle = q("#wikiChip .lpk-chip-title");
+      const repoTitle = q("#repoChip .lpk-chip-title");
+      const tl = gsap.timeline({ paused: true });
+
+      const pointer = q("#pointer");
+      const start = { x: 860, y: 600 };
+      tl.set(pointer, { x: start.x, y: start.y, opacity: 0 }, 0);
+      tl.to(pointer, { opacity: 1, duration: 0.25 }, 2.6);
+
+      // 1. Bare URLs turn into favicon + title
+      tl.fromTo("#cap1", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.2);
+      qa(".slot").forEach((slot, i) => {
+        const at = 0.9 + i * 0.22;
+        tl.to(slot.querySelector(".raw"), { opacity: 0, duration: 0.3, ease: "power1.in" }, at);
+        tl.fromTo(
+          slot.querySelector(".lpk-chip"),
+          { opacity: 0, x: -6 },
+          { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" },
+          at + 0.15,
+        );
+      });
+
+      // 2. Hover the Wikipedia link
+      tl.to("#cap1", { opacity: 0, y: -8, duration: 0.3 }, 2.7);
+      tl.fromTo("#cap2", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 2.9);
+      const wiki = spot(wikiTitle, 0.55, 0.6);
+      tl.to(pointer, { x: wiki.x, y: wiki.y, duration: 0.9, ease: "power2.inOut" }, 2.7);
+      tl.set(".pointer .arrow", { opacity: 0 }, 3.6);
+      tl.set(".pointer .hand", { opacity: 1 }, 3.6);
+      tl.set("#wikiChip", { className: "lpk-chip is-hover" }, 3.6);
+      tl.fromTo("#card", { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.22, ease: "power2.out" }, 4.05);
+
+      // 3. Leave the card, Option-click the last link to edit it
+      tl.to("#card", { opacity: 0, duration: 0.2 }, 6.3);
+      tl.set("#wikiChip", { className: "lpk-chip" }, 6.3);
+      tl.set(".pointer .hand", { opacity: 0 }, 6.3);
+      tl.set(".pointer .arrow", { opacity: 1 }, 6.3);
+      tl.to("#cap2", { opacity: 0, y: -8, duration: 0.3 }, 6.3);
+      tl.fromTo("#cap3", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 6.5);
+      const repo = spot(repoTitle, 0.5, 0.6);
+      tl.to(pointer, { x: repo.x, y: repo.y, duration: 0.8, ease: "power2.inOut" }, 6.35);
+      tl.set(".pointer .arrow", { opacity: 0 }, 7.15);
+      tl.set(".pointer .hand", { opacity: 1 }, 7.15);
+      tl.set("#repoChip", { className: "lpk-chip is-hover" }, 7.15);
+      tl.fromTo("#optkey", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.18, immediateRender: false }, 7.25);
+      tl.fromTo("#ripple", { opacity: 0.9, scale: 0.3 }, { opacity: 0, scale: 1.3, duration: 0.45, ease: "power1.out", immediateRender: false }, 7.6);
+      tl.set("#repoChip", { opacity: 0, className: "lpk-chip" }, 7.65);
+      tl.set("#s5 .raw", { opacity: 1 }, 7.65);
+      tl.to("#optkey", { opacity: 0, duration: 0.2 }, 8.0);
+      // Blinking caret at the end of the raw URL
+      for (let t = 7.65; t < 9.4; t += 1.0) {
+        tl.set("#caret", { opacity: 1 }, t);
+        tl.set("#caret", { opacity: 0 }, t + 0.5);
+      }
+      tl.set(".pointer .hand", { opacity: 0 }, 8.1);
+      tl.set(".pointer .arrow", { opacity: 1 }, 8.1);
+      tl.to(pointer, { x: 800, y: 560, duration: 0.7, ease: "power2.inOut" }, 8.1);
+
+      // 4. Caret leaves, title returns, then everything resets for the loop
+      tl.set("#caret", { opacity: 0 }, 9.4);
+      tl.to("#s5 .raw", { opacity: 0, duration: 0.25 }, 9.4);
+      tl.fromTo("#repoChip", { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, 9.5);
+      tl.to("#cap3", { opacity: 0, duration: 0.4 }, 10.2);
+      tl.to(".lpk-chip", { opacity: 0, duration: 0.4 }, 10.4);
+      tl.to(".raw", { opacity: 1, duration: 0.4 }, 10.5);
+      tl.to(pointer, { opacity: 0, duration: 0.4 }, 10.3);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
