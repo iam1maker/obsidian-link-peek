@@ -17,6 +17,8 @@ const folder = process.env.LPK_E2E_FOLDER ?? "";
 const EVAL_TIMEOUT_MS = 30_000;
 const SUITE_TIMEOUT_MS = 120_000;
 const POLL_MS = 1_000;
+/** Obsidian occasionally answers a poll with nothing while it is busy (a pop-out opening); retry. */
+const MAX_EMPTY_POLLS = 10;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -36,14 +38,33 @@ function obsidianEval(code) {
 	return line.slice(3);
 }
 
-async function waitForGlobal(name, what) {
+function pollGlobal(name) {
+	return JSON.parse(obsidianEval(`JSON.stringify(window.${name} ?? null)`));
+}
+
+async function waitForGlobal(name, what, { done = (value) => value?.done } = {}) {
 	const deadline = Date.now() + SUITE_TIMEOUT_MS;
+	let empty = 0;
 	while (Date.now() < deadline) {
 		await sleep(POLL_MS);
-		const value = JSON.parse(obsidianEval(`JSON.stringify(window.${name} ?? null)`));
-		if (value?.done) return value;
+		let value;
+		try {
+			value = pollGlobal(name);
+			empty = 0;
+		} catch (error) {
+			if (++empty > MAX_EMPTY_POLLS) throw error;
+			continue;
+		}
+		if (done(value)) return value;
 	}
 	throw new Error(`Timed out waiting for ${what}`);
+}
+
+// Never overlap two runs: the second would snapshot the first one's test settings as the user's.
+const previous = pollGlobal("__lpkE2E");
+if (previous && !previous.done) {
+	console.log("A previous run is still going inside Obsidian; waiting for it to finish...");
+	await waitForGlobal("__lpkE2E", "the previous run to finish");
 }
 
 const reload = `(async () => {

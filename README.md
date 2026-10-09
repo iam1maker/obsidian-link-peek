@@ -1,5 +1,7 @@
 # Link Peek
 
+English | [简体中文](README.zh-CN.md)
+
 Hover an external link in Obsidian to see a preview card with the page's title, description and image. Bare URLs can also show up as page titles, and a URL on its own line as a card.
 
 ![Link Peek demo: bare URLs become page titles, hovering shows a preview card](https://raw.githubusercontent.com/iam1maker/obsidian-link-peek/main/docs/images/demo.gif)
@@ -26,6 +28,7 @@ Settings → Community plugins → Browse → search for "Link Peek".
 - Titles and cards past the cache lifetime still show; hovering the link refreshes them in the background.
 - Cards opening too eagerly? Set a trigger key (Cmd/Ctrl, Option/Alt or Shift).
 - From the keyboard, use the command *Preview link under cursor*.
+- The interface follows Obsidian's language; Simplified Chinese is included.
 
 ## Privacy
 

@@ -113,6 +113,8 @@ export class HoverController {
 	}
 
 	private resolveUrl(target: Element, event: MouseEvent): string | null {
+		// A link card already is the preview; a hover card on top of it only repeats it.
+		if (target.closest(".lpk-card")) return null;
 		const { app } = this.plugin;
 		const settings = this.settings();
 		const url =

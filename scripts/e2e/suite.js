@@ -6,6 +6,7 @@
 // cache (no network), and the user's settings are restored at the end.
 (async () => {
 	const FOLDER = window.__lpkE2EFolder ?? "";
+	if (window.__lpkE2E && !window.__lpkE2E.done) return; // another run owns the vault right now
 	const state = { done: false, results: [], error: null };
 	window.__lpkE2E = state;
 
@@ -196,7 +197,10 @@
 			const anchors = await waitFor(() => {
 				const found = [...view.querySelectorAll("a.lpk-chip-anchor")];
 				return found.length >= 3 && found;
-			}, "three reading-view chips");
+			}, "three reading-view chips").catch((error) => {
+				const links = [...view.querySelectorAll("a.external-link")].map((a) => `${a.textContent}${a.dataset.lpk ? "*" : ""}`);
+				throw new Error(`${error.message}; links: ${JSON.stringify(links)}; mode: ${leaf.view.getMode()}`);
+			});
 			sameSet(anchors.map((a) => a.textContent), [PAGES.alpha, PAGES.beta, PAGES.gamma], "reading titles");
 			const delta = [...view.querySelectorAll("a.external-link")].find((a) => a.getAttribute("href") === url("delta"));
 			assert(delta && delta.textContent === "Delta text", "text link lost its text");
@@ -302,6 +306,18 @@
 			await waitFor(() => !cardTitles(leaf.view.containerEl).includes(PAGES.alpha), "alpha card to reveal");
 			leaf.view.editor.setCursor({ line: CARDS.split("\n").length - 1, ch: 0 });
 			await waitFor(() => cardTitles(leaf.view.containerEl).includes(PAGES.alpha), "alpha card to return");
+		});
+
+		test("hovering a card does not open a hover card on top of it", async () => {
+			const leaf = leaves[leaves.length - 1];
+			await show(leaf);
+			const card = await waitFor(() => cardsIn(leaf.view.containerEl)[0], "a card");
+			const rect = card.getBoundingClientRect();
+			const at = { clientX: rect.left + rect.width / 3, clientY: rect.top + rect.height / 2, bubbles: true };
+			card.dispatchEvent(new MouseEvent("mouseover", at));
+			card.dispatchEvent(new MouseEvent("mousemove", at));
+			await sleep(plugin.settings.hoverDelayMs + 400);
+			assert(!visibleCard(document), "a hover card opened over a link card");
 		});
 
 		test("Reading view draws the same cards", async () => {

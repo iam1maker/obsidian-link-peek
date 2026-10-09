@@ -7,6 +7,12 @@ goes through the humanizer pass before it lands here.
 The forum account cannot post links yet, so entries point to the GitHub releases page in
 words instead of with a URL.
 
+## 0.4.1 (2026-10-09)
+
+0.4.1 is a small fix. Hovering a link card no longer pops up a hover card on top of it; the card already shows everything the popup would. The README now also comes in Simplified Chinese.
+
+Release notes are on the GitHub releases page, tag 0.4.1 (repo link is in the first post; this account can't post links yet).
+
 ## 0.4.0 (2026-10-09)
 
 0.4.0 is out. The new thing is link cards, off by default.
