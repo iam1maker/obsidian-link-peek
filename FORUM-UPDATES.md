@@ -7,6 +7,19 @@ goes through the humanizer pass before it lands here.
 The forum account cannot post links yet, so entries point to the GitHub releases page in
 words instead of with a URL.
 
+## 0.3.2 (2026-10-09)
+
+0.3.2 is out. A small release, mostly groundwork for the next feature.
+
+- Links to files (PDF, zip, video, Office documents and so on) are no longer downloaded when you hover them. The card shows the file name and what kind of file it is.
+- The interface is in Simplified Chinese when Obsidian is set to Chinese.
+- Link Peek is now marked desktop only. I never tested it on a phone, so I'd rather not claim it works there.
+- There's now an end-to-end test suite that runs inside Obsidian, which should keep regressions out of future releases.
+
+Next up: a URL that sits alone on its own line will show as a full card, still without writing anything into the note.
+
+Release notes are on the GitHub releases page, tag 0.3.2 (repo link is in the first post; this account can't post links yet).
+
 ## 0.3.1 (2026-10-08)
 
 0.3.1 is a small fix release.

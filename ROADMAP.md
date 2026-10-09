@@ -80,9 +80,22 @@ and parser; writes nothing. Differentiator: URL Enricher stops at Live Preview a
 block that is format-compatible with Auto Card Link's `cardlink` block so existing notes from
 that (unmaintained) plugin render with Link Peek. Paste-to-card stays off by default.
 
-## 0.4 — block cards for standalone links (planned, not scheduled)
+## 0.3.2 — housekeeping before 0.4
 
-Decided 2026-10-06: worth doing, not started. Pick it up only when the user asks.
+Decided 2026-10-09.
+
+- [x] **Desktop only.** Mobile was never tested; `isDesktopOnly` is now true. Revisit only with
+  a real device to test on.
+- [x] **File links.** URLs that point at files (PDF, archives, video, Office documents...) are
+  recognised by extension and never downloaded; the card shows the file name and kind.
+  Extensionless files are still fetched once and then cached as files.
+- [x] **Chinese UI.** All UI text goes through `src/i18n`; Simplified Chinese follows
+  Obsidian's language setting.
+- [x] **End-to-end tests.** See Engineering debt.
+
+## 0.4 — block cards for standalone links (scheduled after 0.3.2)
+
+Decided 2026-10-06; scheduled 2026-10-09, to start once 0.3.2 is out.
 
 **What.** A URL alone on its own line (nothing else on the line, outside code) renders as a full
 card in Live Preview, Reading view and Canvas text cards: image, title, description, site, the
@@ -121,9 +134,9 @@ same code-block language; Link Peek must stand down when Auto Card Link is enabl
 
 - Canvas link-node resolution relies on the undocumented `canvas.nodes`; verify in a real Canvas
   on each Obsidian minor release.
-- Unit tests cover parsing, cache and editor URL resolution only. The four hover paths are
-  verified by hand. Add CDP-driven regression scripts (synthetic `mouseover` through
-  `obsidian dev:cdp`) before 0.3 adds a second rendering surface.
+- [x] End-to-end regression suite (2026-10-09): `npm run e2e` runs nine scenarios in a live
+  Obsidian (chips, caret reveal, Source mode, Reading view, per-note opt-out, toggle, hover
+  card, file links, pop-out). Extend it with every new surface, starting with 0.4.
 - [x] Community directory review findings from the 0.3.0 review, fixed together in 0.3.1
   (2026-10-08): needless regex escape, `unknown | null` return types, the deprecated
   `caretRangeFromPoint` fallback, `document.createElement` in the inline widgets (now created

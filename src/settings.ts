@@ -1,4 +1,5 @@
 import { App, Notice, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
+import { plural, t } from "./i18n";
 import type LinkPeekPlugin from "./main";
 
 /**
@@ -108,13 +109,13 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 	getSettingDefinitions(): SettingDefinitionItem<SettingKey>[] {
 		return [
 			{
-				name: "Enable hover previews",
-				desc: "Turn previews off without disabling the plugin (the cache is kept).",
+				name: t("settings.enabled.name"),
+				desc: t("settings.enabled.desc"),
 				control: { type: "toggle", key: "enabled", defaultValue: DEFAULT_SETTINGS.enabled },
 			},
 			{
-				name: "Hover delay",
-				desc: "How long the pointer must rest on a link before the card opens.",
+				name: t("settings.delay.name"),
+				desc: t("settings.delay.desc"),
 				control: {
 					type: "slider",
 					key: "hoverDelayMs",
@@ -122,49 +123,49 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 					max: 1500,
 					step: 50,
 					defaultValue: DEFAULT_SETTINGS.hoverDelayMs,
-					displayFormat: (value) => `${value} ms`,
+					displayFormat: (value) => t("unit.ms", { n: value }),
 				},
 			},
 			{
-				name: "Trigger key",
-				desc: "Only open cards while this key is held. Pressing it while already hovering a link opens the card too.",
+				name: t("settings.trigger.name"),
+				desc: t("settings.trigger.desc"),
 				aliases: ["modifier", "hold key"],
 				control: {
 					type: "dropdown",
 					key: "triggerModifier",
 					defaultValue: DEFAULT_SETTINGS.triggerModifier,
 					options: {
-						none: "None (plain hover)",
-						Mod: "Cmd (macOS) / Ctrl",
-						Alt: "Option / Alt",
-						Shift: "Shift",
+						none: t("settings.trigger.none"),
+						Mod: t("settings.trigger.mod"),
+						Alt: t("settings.trigger.alt"),
+						Shift: t("settings.trigger.shift"),
 					},
 				},
 			},
 			{
-				name: "Only when the pointer is still",
-				desc: "Restart the hover delay whenever the pointer moves, so sweeping across text never opens cards.",
+				name: t("settings.still.name"),
+				desc: t("settings.still.desc"),
 				aliases: ["stillness"],
 				control: { type: "toggle", key: "requireStillPointer", defaultValue: DEFAULT_SETTINGS.requireStillPointer },
 			},
 			{
 				type: "group",
-				heading: "Card",
+				heading: t("settings.heading.card"),
 				items: [
 					{
-						name: "Show images",
-						desc: "Render the og:image thumbnail in the card.",
+						name: t("settings.images.name"),
+						desc: t("settings.images.desc"),
 						control: { type: "toggle", key: "showImages", defaultValue: DEFAULT_SETTINGS.showImages },
 					},
 					{
-						name: "Hide images from these domains",
-						desc: "One hostname per line; subdomains are included. Cards from these sites show no thumbnail.",
+						name: t("settings.noImages.name"),
+						desc: t("settings.noImages.desc"),
 						aliases: ["no image", "thumbnail blocklist"],
 						control: { type: "textarea", key: "noImageDomains", placeholder: "example.com", rows: 3 },
 					},
 					{
-						name: "Description lines",
-						desc: "How many lines of description to show before cutting off.",
+						name: t("settings.descLines.name"),
+						desc: t("settings.descLines.desc"),
 						control: {
 							type: "slider",
 							key: "descriptionLines",
@@ -172,43 +173,43 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 							max: 6,
 							step: 1,
 							defaultValue: DEFAULT_SETTINGS.descriptionLines,
-							displayFormat: (value) => `${value} line${value === 1 ? "" : "s"}`,
+							displayFormat: (value) => plural("unit.line", value),
 						},
 					},
 					{
-						name: "Compact cards",
-						desc: "Show only favicon, site name and title. No image, no description.",
+						name: t("settings.compact.name"),
+						desc: t("settings.compact.desc"),
 						control: { type: "toggle", key: "compactCards", defaultValue: DEFAULT_SETTINGS.compactCards },
 					},
 				],
 			},
 			{
 				type: "group",
-				heading: "Inline links",
+				heading: t("settings.heading.inline"),
 				items: [
 					{
-						name: "Inline link titles",
-						desc: "Show bare URLs as favicon + page title in Live Preview and Reading view. The note itself is not changed; put the cursor on the link to see the URL. \"Fetch\" sends a request to each site whose link is on screen.",
+						name: t("settings.inline.name"),
+						desc: t("settings.inline.desc"),
 						aliases: ["chip", "decorate", "rich link"],
 						control: {
 							type: "dropdown",
 							key: "inlineTitles",
 							defaultValue: DEFAULT_SETTINGS.inlineTitles,
 							options: {
-								off: "Off",
-								cached: "Only links already previewed (no extra requests)",
-								fetch: "Fetch titles for links on screen",
+								off: t("settings.inline.off"),
+								cached: t("settings.inline.cached"),
+								fetch: t("settings.inline.fetch"),
 							},
 						},
 					},
 					{
-						name: "Favicons on text links",
-						desc: "Show the site icon in front of [text](url) links. The link text stays as you wrote it.",
+						name: t("settings.favicons.name"),
+						desc: t("settings.favicons.desc"),
 						control: { type: "toggle", key: "inlineFavicons", defaultValue: DEFAULT_SETTINGS.inlineFavicons },
 					},
 					{
-						name: "Maximum title length",
-						desc: "Longer titles are cut with an ellipsis.",
+						name: t("settings.maxTitle.name"),
+						desc: t("settings.maxTitle.desc"),
 						control: {
 							type: "slider",
 							key: "inlineMaxTitle",
@@ -216,29 +217,29 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 							max: 120,
 							step: 5,
 							defaultValue: DEFAULT_SETTINGS.inlineMaxTitle,
-							displayFormat: (value) => `${value} characters`,
+							displayFormat: (value) => plural("unit.char", value),
 						},
 					},
 				],
 			},
 			{
-				name: "Preview in Canvas",
-				desc: "Also show cards for Canvas link nodes and links inside Canvas text nodes.",
+				name: t("settings.canvas.name"),
+				desc: t("settings.canvas.desc"),
 				control: { type: "toggle", key: "enableCanvas", defaultValue: DEFAULT_SETTINGS.enableCanvas },
 			},
 			{
-				name: "Excluded domains",
-				desc: "One hostname per line. Subdomains are included (example.com also excludes docs.example.com).",
+				name: t("settings.excluded.name"),
+				desc: t("settings.excluded.desc"),
 				aliases: ["blocklist", "ignore sites"],
 				control: { type: "textarea", key: "excludedDomains", placeholder: "example.com\nintranet.local", rows: 4 },
 			},
 			{
 				type: "group",
-				heading: "Cache",
+				heading: t("settings.heading.cache"),
 				items: [
 					{
-						name: "Cache lifetime",
-						desc: "Successful lookups are reused for this long. Failures are retried after an hour regardless.",
+						name: t("settings.ttl.name"),
+						desc: t("settings.ttl.desc"),
 						control: {
 							type: "slider",
 							key: "cacheTtlDays",
@@ -246,12 +247,12 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 							max: 90,
 							step: 1,
 							defaultValue: DEFAULT_SETTINGS.cacheTtlDays,
-							displayFormat: (value) => `${value} day${value === 1 ? "" : "s"}`,
+							displayFormat: (value) => plural("unit.day", value),
 						},
 					},
 					{
-						name: "Maximum cached links",
-						desc: "Least recently used entries are dropped beyond this.",
+						name: t("settings.maxCache.name"),
+						desc: t("settings.maxCache.desc"),
 						control: {
 							type: "number",
 							key: "maxCacheEntries",
@@ -259,16 +260,16 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 							step: 1,
 							defaultValue: DEFAULT_SETTINGS.maxCacheEntries,
 							validate: (value) =>
-								Number.isInteger(value) && value >= MIN_CACHE_ENTRIES ? undefined : `Enter a whole number of at least ${MIN_CACHE_ENTRIES}.`,
+								Number.isInteger(value) && value >= MIN_CACHE_ENTRIES ? undefined : t("settings.maxCache.invalid", { n: MIN_CACHE_ENTRIES }),
 						},
 					},
 					{
-						name: "Clear cache",
-						desc: `${this.plugin.cache.size} link(s) cached.`,
+						name: t("settings.clear.name"),
+						desc: plural("settings.clear.desc", this.plugin.cache.size),
 						action: () => {
 							this.plugin.service.clear();
 							void this.plugin.saveSettings();
-							new Notice("Link Peek: cache cleared");
+							new Notice(t("notice.cacheCleared"));
 							this.update();
 						},
 					},

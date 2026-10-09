@@ -1,5 +1,7 @@
 import { setIcon } from "obsidian";
+import { t } from "../i18n";
 import { describeError } from "../metadata/errors";
+import { FILE_ICONS, fileKindOf } from "../metadata/files";
 import type { ErrorKind, LinkMetadata } from "../metadata/types";
 import { displayUrl, hostnameOf } from "../metadata/parse";
 
@@ -132,7 +134,13 @@ export class LinkPopover {
 		this.renderHeader(meta.siteName ?? hostnameOf(meta.url), meta.favicon, meta.url);
 		this.el.createDiv({ cls: "lpk-title", text: meta.title ?? meta.url });
 		if (options.compact) return;
-		if (meta.description) {
+		const fileKind = fileKindOf(meta);
+		if (fileKind) {
+			// Files are never downloaded for a preview; say what it is instead of describing it.
+			const row = this.el.createDiv({ cls: "lpk-file" });
+			setIcon(row.createSpan({ cls: "lpk-file-icon" }), FILE_ICONS[fileKind]);
+			row.createSpan({ text: t(`file.${fileKind}`) });
+		} else if (meta.description) {
 			this.el.createDiv({ cls: "lpk-desc", text: meta.description });
 		} else if (meta.title) {
 			// No description (Hacker News, many blogs): show the readable URL so the card is never a lone title.
@@ -146,10 +154,10 @@ export class LinkPopover {
 		this.el.createDiv({ cls: "lpk-error-text", text: describeError(state.errorKind, state.error), attr: { title: state.error } });
 
 		const buttons = this.el.createDiv({ cls: "lpk-buttons" });
-		buttons.createEl("a", { cls: "lpk-open-btn", href: state.url, text: "Open in browser" });
+		buttons.createEl("a", { cls: "lpk-open-btn", href: state.url, text: t("card.openInBrowser") });
 		// Blocked sites will block the retry too; only offer it where it can help.
 		if (state.errorKind !== "blocked" && state.errorKind !== "notfound" && state.errorKind !== "empty") {
-			const retry = buttons.createEl("button", { cls: "lpk-retry", text: "Retry" });
+			const retry = buttons.createEl("button", { cls: "lpk-retry", text: t("card.retry") });
 			retry.addEventListener("click", (event) => {
 				event.preventDefault();
 				this.callbacks.onRetry(state.url);
@@ -169,7 +177,7 @@ export class LinkPopover {
 
 		const pin = header.createEl("button", {
 			cls: "lpk-action lpk-pin clickable-icon",
-			attr: { "aria-label": this._pinned ? "Unpin" : "Pin (keep open)", "aria-pressed": String(this._pinned) },
+			attr: { "aria-label": t(this._pinned ? "card.unpin" : "card.pin"), "aria-pressed": String(this._pinned) },
 		});
 		setIcon(pin, this._pinned ? "pin-off" : "pin");
 		pin.addEventListener("click", (event) => {
@@ -177,11 +185,11 @@ export class LinkPopover {
 			this.callbacks.onPinChange(!this._pinned);
 		});
 
-		const open = header.createEl("a", { cls: "lpk-action lpk-open", href: url, attr: { "aria-label": "Open link" } });
+		const open = header.createEl("a", { cls: "lpk-action lpk-open", href: url, attr: { "aria-label": t("menu.open") } });
 		setIcon(open, "external-link");
 
 		if (this._pinned) {
-			const close = header.createEl("button", { cls: "lpk-action lpk-close clickable-icon", attr: { "aria-label": "Close" } });
+			const close = header.createEl("button", { cls: "lpk-action lpk-close clickable-icon", attr: { "aria-label": t("card.close") } });
 			setIcon(close, "x");
 			close.addEventListener("click", (event) => {
 				event.preventDefault();

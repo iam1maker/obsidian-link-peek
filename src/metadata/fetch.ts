@@ -1,7 +1,8 @@
 import { requestUrl } from "obsidian";
 import { decodeHtml } from "./charset";
 import { classifyStatus, looksLikeChallenge } from "./errors";
-import { metadataForNonHtml, parseMetadata } from "./parse";
+import { fileKindFromContentType, fileKindFromUrl, fileMetadata } from "./files";
+import { parseMetadata } from "./parse";
 import { fillFromOembed, needsOembed, siteResolver } from "./sites";
 import type { MetadataResult } from "./types";
 
@@ -62,6 +63,10 @@ export async function fetchJson(url: string): Promise<unknown> {
 }
 
 export async function fetchMetadata(url: string): Promise<MetadataResult> {
+	// File links are named by their URL; nothing is downloaded.
+	const fileKind = fileKindFromUrl(url);
+	if (fileKind) return { ok: true, meta: fileMetadata(url, fileKind, null) };
+
 	// Sites whose HTML is useless to a non-browser get their public API first; any failure falls through.
 	const resolver = siteResolver(url);
 	if (resolver) {
@@ -96,7 +101,7 @@ export async function fetchMetadata(url: string): Promise<MetadataResult> {
 		const contentType = contentTypeHeader?.split(";")[0].trim().toLowerCase() ?? null;
 		const isHtml = contentType === null || contentType.includes("html") || contentType.includes("xml");
 		if (!isHtml) {
-			return { ok: true, meta: metadataForNonHtml(url, contentType) };
+			return { ok: true, meta: fileMetadata(url, fileKindFromContentType(contentType), contentType) };
 		}
 
 		const html = decodeHtml(response.arrayBuffer, contentTypeHeader);

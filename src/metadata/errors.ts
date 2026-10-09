@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import type { ErrorKind, LinkMetadata } from "./types";
 
 /** Map an HTTP status to what the card should say. */
@@ -24,18 +25,18 @@ export function looksLikeChallenge(meta: LinkMetadata, bodyLength: number): bool
 export function describeError(kind: ErrorKind | undefined, error: string): string {
 	switch (kind) {
 		case "blocked":
-			return "This site blocks previews";
+			return t("error.blocked");
 		case "notfound":
-			return "Page not found";
+			return t("error.notfound");
 		case "timeout":
-			return "The site did not respond in time";
+			return t("error.timeout");
 		case "network":
-			return "Could not reach the site";
+			return t("error.network");
 		case "empty":
-			return "This page has no preview metadata";
+			return t("error.empty");
 		case "http":
-			return `The site returned an error (${error})`;
+			return t("error.http", { error });
 		default:
-			return `Preview unavailable · ${error}`;
+			return t("error.unknown", { error });
 	}
 }

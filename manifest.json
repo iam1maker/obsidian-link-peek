@@ -6,5 +6,5 @@
 	"description": "Hover any external link to see an OpenGraph preview card. Works in Live Preview, Reading view and Canvas; metadata is cached locally.",
 	"author": "1maker",
 	"authorUrl": "https://github.com/iam1maker",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

@@ -1,4 +1,5 @@
 import { Menu, Notice } from "obsidian";
+import { t } from "../i18n";
 import type { ChipLabel } from "./label";
 
 /**
@@ -38,22 +39,22 @@ export interface LinkMenuActions {
 
 export function showLinkMenu(event: MouseEvent, url: string, actions: LinkMenuActions): void {
 	const menu = new Menu();
-	menu.addItem((item) => item.setTitle("Open link").setIcon("external-link").onClick(() => openUrl(url)));
-	menu.addItem((item) => item.setTitle("Preview card").setIcon("panel-top").onClick(actions.peek));
+	menu.addItem((item) => item.setTitle(t("menu.open")).setIcon("external-link").onClick(() => openUrl(url)));
+	menu.addItem((item) => item.setTitle(t("menu.preview")).setIcon("panel-top").onClick(actions.peek));
 	menu.addItem((item) =>
 		item
-			.setTitle("Copy URL")
+			.setTitle(t("menu.copy"))
 			.setIcon("copy")
 			.onClick(() => {
 				void navigator.clipboard.writeText(url).then(
-					() => new Notice("URL copied"),
+					() => new Notice(t("notice.copied")),
 					(error: unknown) => console.error("[link-peek] copy failed:", error),
 				);
 			}),
 	);
 	if (actions.edit) {
 		const edit = actions.edit;
-		menu.addItem((item) => item.setTitle("Edit URL").setIcon("pencil").onClick(edit));
+		menu.addItem((item) => item.setTitle(t("menu.edit")).setIcon("pencil").onClick(edit));
 	}
 	menu.showAtMouseEvent(event);
 }

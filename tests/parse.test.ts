@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeEntities, displayUrl, headOf, metadataForNonHtml, parseMetadata, textFromHtml } from "../src/metadata/parse";
+import { decodeEntities, displayUrl, headOf, parseMetadata, textFromHtml } from "../src/metadata/parse";
 
 const BASE = "https://example.com/articles/42";
 
@@ -76,16 +76,6 @@ describe("parseMetadata", () => {
 describe("decodeEntities", () => {
 	it("decodes named, decimal and hex entities and leaves unknown ones alone", () => {
 		expect(decodeEntities("a &amp; b &#39;c&#x27; &hellip; &bogus;")).toBe("a & b 'c' … &bogus;");
-	});
-});
-
-describe("metadataForNonHtml", () => {
-	it("uses the file name as title and previews images inline", () => {
-		const pdf = metadataForNonHtml("https://example.com/docs/Report%202024.pdf", "application/pdf");
-		expect(pdf.title).toBe("Report 2024.pdf");
-		expect(pdf.image).toBeNull();
-		const img = metadataForNonHtml("https://example.com/a.png", "image/png");
-		expect(img.image).toBe("https://example.com/a.png");
 	});
 });
 

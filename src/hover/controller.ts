@@ -1,5 +1,6 @@
 import { Component, type Editor, Notice, Platform, type Plugin } from "obsidian";
 import type { EditorView } from "@codemirror/view";
+import { t } from "../i18n";
 import type { MetadataService } from "../metadata/service";
 import type { MetadataResult } from "../metadata/types";
 import { isExcluded, type LinkPeekSettings } from "../settings";
@@ -219,13 +220,12 @@ export class HoverController {
 	/**
 	 * `Preview link under cursor` command. Opens the card pinned: without a
 	 * pointer resting on the link there is nothing to keep it alive otherwise.
-	 * This is also the only entry point on touch devices.
 	 */
 	previewAtCursor(editor: Editor): void {
 		const cursor = editor.getCursor();
 		const url = urlAtOffset(editor.getLine(cursor.line), cursor.ch);
 		if (!url || isExcluded(url, this.settings().excludedDomains)) {
-			new Notice("Link Peek: no external link under the cursor");
+			new Notice(t("notice.noLink"));
 			return;
 		}
 		if (this.currentUrl === url && this.active?.isVisible) {

@@ -207,6 +207,25 @@
 	}
 }
 
+/* File links: what the file is, in place of a description (files are never downloaded) */
+.lpk-file {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 12px 0;
+	margin-bottom: 12px;
+	color: var(--text-muted);
+}
+
+.lpk-file-icon {
+	display: inline-flex;
+}
+
+.lpk-file-icon svg {
+	width: 16px;
+	height: 16px;
+}
+
 /* URL shown in place of a missing description */
 .lpk-desc-url {
 	font-family: var(--font-monospace);

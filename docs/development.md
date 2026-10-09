@@ -23,7 +23,7 @@ The card says why and offers a way out: *This site blocks previews* (401/403/429
 ```bash
 npm install
 npm run dev        # esbuild watch → main.js
-npm test           # vitest: metadata parsing, cache, editor URL resolution
+npm test           # vitest: parsing, cache, URL resolution, file links, i18n
 npm run build      # type-check + minified bundle
 ```
 
@@ -32,5 +32,20 @@ Link the checkout into a vault to test it live:
 ```bash
 ln -s "$(pwd)" /path/to/vault/.obsidian/plugins/link-peek
 ```
+
+## End-to-end tests
+
+`npm run e2e` drives the plugin inside a running Obsidian through the official CLI
+(`obsidian eval`). Open the vault the build is linked into, then:
+
+```bash
+LPK_E2E_VAULT="My vault" LPK_E2E_FOLDER=inbox npm run e2e
+```
+
+The runner reloads the plugin, has Obsidian evaluate `scripts/e2e/suite.js`, and prints one
+line per scenario; it exits non-zero on any failure. The suite is safe on a real vault: its
+two fixture notes are created in `LPK_E2E_FOLDER` and deleted afterwards, every link uses
+the reserved `.test` TLD and is seeded straight into the cache (no network), and settings
+are restored at the end. It cannot check native context menus (macOS) or IME input.
 
 Releases are cut by pushing a tag equal to the `manifest.json` version (`npm version patch && git push --follow-tags`); GitHub Actions builds and attaches `main.js`, `manifest.json`, `styles.css`.

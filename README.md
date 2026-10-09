@@ -18,7 +18,7 @@ Settings → Community plugins → Browse → search for "Link Peek".
 - **Inline link titles** are off by default. Turn them on under Settings → Link Peek. To edit a link, put the cursor on it or Option/Alt-click it.
 - Add `link-peek: off` to a note's properties to keep that note's URLs as they are.
 - Cards opening too eagerly? Set a trigger key (Cmd/Ctrl, Option/Alt or Shift).
-- On mobile, or from the keyboard, use the command *Preview link under cursor*.
+- From the keyboard, use the command *Preview link under cursor*.
 
 ## Privacy
 

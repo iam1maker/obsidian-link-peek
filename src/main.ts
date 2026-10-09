@@ -1,6 +1,7 @@
-import { Notice, Plugin, debounce } from "obsidian";
+import { Notice, Plugin, debounce, getLanguage } from "obsidian";
 import { MetadataCache, type SerializedCache } from "./cache";
 import { HoverController } from "./hover/controller";
+import { setLocale, t } from "./i18n";
 import { optedOut } from "./inline/classify";
 import type { InlineContext } from "./inline/context";
 import { inlineEditorExtension } from "./inline/live-preview";
@@ -35,6 +36,7 @@ export default class LinkPeekPlugin extends Plugin {
 	private persistCache = debounce(() => void this.saveAll(), 2000, true);
 
 	async onload(): Promise<void> {
+		setLocale(getLanguage());
 		const data = ((await this.loadData()) ?? {}) as PersistedData;
 		this.settings = { ...DEFAULT_SETTINGS, ...(data.settings ?? {}) };
 
@@ -87,39 +89,39 @@ export default class LinkPeekPlugin extends Plugin {
 
 		this.addCommand({
 			id: "toggle-hover-previews",
-			name: "Toggle hover previews",
+			name: t("command.toggleHover"),
 			callback: async () => {
 				this.settings.enabled = !this.settings.enabled;
 				await this.saveSettings();
-				new Notice(`Link Peek: ${this.settings.enabled ? "on" : "off"}`);
+				new Notice(t(this.settings.enabled ? "notice.hoverOn" : "notice.hoverOff"));
 			},
 		});
 
 		this.addCommand({
 			id: "toggle-inline-titles",
-			name: "Toggle inline link titles",
+			name: t("command.toggleInline"),
 			callback: async () => {
 				const { inlineTitles, inlineLastMode } = this.settings;
 				this.settings.inlineTitles = inlineTitles === "off" ? inlineLastMode : "off";
 				if (inlineTitles !== "off") this.settings.inlineLastMode = inlineTitles;
 				await this.saveSettings();
-				new Notice(`Link Peek inline titles: ${this.settings.inlineTitles === "off" ? "off" : "on"}`);
+				new Notice(t(this.settings.inlineTitles === "off" ? "notice.inlineOff" : "notice.inlineOn"));
 			},
 		});
 
 		this.addCommand({
 			id: "preview-link-under-cursor",
-			name: "Preview link under cursor",
+			name: t("command.previewAtCursor"),
 			editorCallback: (editor) => hover.previewAtCursor(editor),
 		});
 
 		this.addCommand({
 			id: "clear-cache",
-			name: "Clear metadata cache",
+			name: t("command.clearCache"),
 			callback: async () => {
 				this.service.clear();
 				await this.saveSettings();
-				new Notice("Link Peek: cache cleared");
+				new Notice(t("notice.cacheCleared"));
 			},
 		});
 	}

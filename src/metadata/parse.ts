@@ -72,7 +72,7 @@ function cleanText(value: string | undefined | null): string | null {
 	return text.length > 0 ? text : null;
 }
 
-function resolveUrl(candidate: string | null, base: string): string | null {
+export function resolveUrl(candidate: string | null, base: string): string | null {
 	if (!candidate) return null;
 	try {
 		const resolved = new URL(candidate, base);
@@ -167,26 +167,4 @@ export function hostnameOf(url: string): string | null {
 	} catch {
 		return null;
 	}
-}
-
-/** Metadata for responses that are not HTML (PDF, image, …): nothing to parse, show the file name. */
-export function metadataForNonHtml(url: string, contentType: string | null): LinkMetadata {
-	let title: string | null = null;
-	try {
-		const path = new URL(url).pathname;
-		const last = path.split("/").filter(Boolean).pop();
-		title = last ? decodeURIComponent(last) : null;
-	} catch {
-		title = null;
-	}
-	const isImage = contentType?.startsWith("image/") ?? false;
-	return {
-		url,
-		title,
-		description: contentType,
-		image: isImage ? url : null,
-		favicon: resolveUrl("/favicon.ico", url),
-		siteName: hostnameOf(url),
-		contentType,
-	};
 }

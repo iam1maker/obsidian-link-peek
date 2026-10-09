@@ -10,7 +10,23 @@ export interface LinkMetadata {
 	contentType: string | null;
 	/** oEmbed endpoint advertised by the page, used to fill gaps when OG tags are missing. */
 	oembedUrl?: string | null;
+	/** Set when the link is a file (PDF, archive, video...) rather than a page. */
+	fileKind?: FileKind;
 }
+
+/** What kind of file a link points at; the card shows a label instead of a description. */
+export type FileKind =
+	| "pdf"
+	| "document"
+	| "spreadsheet"
+	| "presentation"
+	| "archive"
+	| "video"
+	| "audio"
+	| "image"
+	| "ebook"
+	| "installer"
+	| "file";
 
 /**
  * Why a lookup failed, so the card can say something more useful than the raw
