@@ -2,6 +2,7 @@ import { syntaxTree } from "@codemirror/language";
 import { Prec, type Range, StateEffect, type EditorState } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, ViewPlugin, type ViewUpdate, WidgetType } from "@codemirror/view";
 import { editorInfoField, editorLivePreviewField } from "obsidian";
+import { isCarded } from "../cards/live-preview";
 import { isExcluded } from "../settings";
 import { appendIcon, fillChip, openUrl, showLinkMenu, spanFor } from "./chip";
 import { classifyNode, isHttpUrl, markdownLinkStart, touches, type UrlNodeKind } from "./classify";
@@ -197,6 +198,7 @@ class InlineLinksView {
 		for (const node of urlNodes(this.view)) {
 			const url = doc.sliceString(node.from, node.to).trim();
 			if (!isHttpUrl(url) || isExcluded(url, settings.excludedDomains)) continue;
+			if (isCarded(this.view.state, node.from)) continue;
 
 			if (node.kind === "target") {
 				if (!wantIcons) continue;

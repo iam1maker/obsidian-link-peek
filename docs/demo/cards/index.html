@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=960, height=640" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 960px;
+        height: 640px;
+        overflow: hidden;
+        background: #f3f0fb;
+      }
+      :root {
+        /* Obsidian default light theme */
+        --background-primary: #ffffff;
+        --background-primary-alt: #fafafa;
+        --background-secondary: #f6f6f6;
+        --border: #e3e3e3;
+        --border-hover: #d0d0d0;
+        --text-normal: #222222;
+        --text-muted: #5c5c5c;
+        --text-faint: #6b6b6b;
+        --accent: rgb(124, 77, 226);
+        --shadow-s: 0px 1px 2px rgba(0, 0, 0, 0.028), 0px 3.4px 6.7px rgba(0, 0, 0, 0.042), 0px 15px 30px rgba(0, 0, 0, 0.07);
+        --font: system-ui, sans-serif;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        font-family: var(--font);
+        color: var(--text-normal);
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #efeafc 60%, #e6dffa 100%);
+      }
+
+      /* Caption */
+      .caption-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 16px;
+        height: 40px;
+      }
+      .caption {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: #2a2140;
+        opacity: 0;
+      }
+      .caption .key {
+        display: inline-block;
+        margin-right: 2px;
+        padding: 1px 8px;
+        border: 1px solid #cfc6ea;
+        border-bottom-width: 2px;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      /* Window */
+      .window {
+        position: absolute;
+        left: 70px;
+        top: 66px;
+        width: 820px;
+        height: 560px;
+        background: var(--background-primary);
+        border-radius: 12px;
+        border: 1px solid #d9d3ec;
+        box-shadow: 0 20px 50px rgba(60, 40, 120, 0.18), 0 2px 8px rgba(60, 40, 120, 0.08);
+        overflow: hidden;
+      }
+      .titlebar {
+        height: 40px;
+        background: var(--background-secondary);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: flex-end;
+        padding: 0 14px;
+        gap: 18px;
+      }
+      .lights {
+        display: flex;
+        gap: 8px;
+        align-self: center;
+      }
+      .lights span {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: block;
+      }
+      .tab {
+        height: 32px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--background-primary);
+        border: 1px solid var(--border);
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        font-size: 13px;
+        margin-bottom: -1px;
+      }
+      .tab svg {
+        width: 14px;
+        height: 14px;
+        color: var(--text-muted);
+      }
+      .editor {
+        position: relative;
+        padding: 26px 70px 0;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .inline-title {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        margin-bottom: 14px;
+      }
+      .line {
+        min-height: 24px;
+        white-space: nowrap;
+      }
+      .gap {
+        height: 16px;
+      }
+
+      /* A URL line: the raw URL, and the card it grows into */
+      .slot {
+        position: relative;
+        height: 24px;
+        overflow: hidden;
+      }
+      .raw {
+        position: absolute;
+        left: 0;
+        top: 0;
+        line-height: 24px;
+        white-space: nowrap;
+        color: var(--accent);
+        text-decoration: underline;
+        text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+        text-underline-offset: 2px;
+      }
+      .caret {
+        display: inline-block;
+        width: 2px;
+        height: 20px;
+        margin-left: 1px;
+        vertical-align: -4px;
+        background: var(--text-normal);
+        opacity: 0;
+      }
+      .card-wrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 4px;
+        opacity: 0;
+      }
+
+      /* Link card: copied from Link Peek's styles.css */
+      .lpk-card {
+        display: flex;
+        align-items: stretch;
+        height: 112px;
+        overflow: hidden;
+        background-color: var(--background-primary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        line-height: 1.4;
+        white-space: normal;
+      }
+      .lpk-card.is-hover {
+        background-color: var(--background-primary-alt);
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-s);
+      }
+      .lpk-card-body {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+        padding: 12px 16px;
+      }
+      .lpk-card-title {
+        overflow: hidden;
+        font-size: 15px;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lpk-card-desc {
+        display: -webkit-box;
+        overflow: hidden;
+        color: var(--text-muted);
+        font-size: 13px;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .lpk-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: auto;
+        color: var(--text-faint);
+        font-size: 12px;
+      }
+      .lpk-card-favicon {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        object-fit: contain;
+      }
+      .lpk-card-thumb {
+        flex: 0 0 auto;
+        width: 214px;
+        background-color: var(--background-secondary);
+        border-left: 1px solid var(--border);
+      }
+      .lpk-card-thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .lpk-card-thumb.is-contained img {
+        padding: 12px;
+        object-fit: contain;
+      }
+      .lpk-card-thumb.is-file {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 112px;
+        color: var(--text-faint);
+      }
+      .lpk-card-thumb.is-file svg {
+        width: 36px;
+        height: 36px;
+      }
+
+      /* Pointer */
+      .pointer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 26px;
+        height: 26px;
+        z-index: 20;
+      }
+      .pointer svg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 26px;
+        height: 26px;
+        filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+      }
+      .pointer .hand {
+        opacity: 0;
+      }
+      .ripple {
+        position: absolute;
+        left: -14px;
+        top: -14px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid var(--accent);
+        opacity: 0;
+      }
+      .optkey {
+        position: absolute;
+        left: 24px;
+        top: 22px;
+        padding: 1px 7px;
+        border-radius: 5px;
+        background: #2a2140;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        opacity: 0;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="11.5" data-width="960" data-height="640">
+      <div id="stage" class="clip" data-start="0" data-duration="11.5" data-track-index="0">
+        <div class="caption-row">
+          <div class="caption" id="cap1">A URL on its own line becomes a card</div>
+          <div class="caption" id="cap2">Click to open. Files are named, never downloaded.</div>
+          <div class="caption" id="cap3"><span class="key">⌥ Option</span>-click to edit. The note keeps the plain URL.</div>
+        </div>
+
+        <div class="window">
+          <div class="titlebar">
+            <div class="lights">
+              <span style="background: #ff5f57"></span><span style="background: #febc2e"></span
+              ><span style="background: #28c840"></span>
+            </div>
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              </svg>
+              Reading list
+            </div>
+          </div>
+
+          <div class="editor">
+            <div class="inline-title">Reading list</div>
+            <div class="line">Saved this week:</div>
+            <div class="gap"></div>
+
+            <div class="slot" id="s1" data-layout-allow-overflow data-layout-allow-occlusion>
+              <div class="raw" data-layout-allow-occlusion>https://obsidian.md</div>
+              <div class="card-wrap">
+                <div class="lpk-card" id="card1">
+                  <div class="lpk-card-body">
+                    <div class="lpk-card-title">Obsidian - Sharpen your thinking</div>
+                    <div class="lpk-card-desc">The free and flexible app for your private thoughts.</div>
+                    <div class="lpk-card-meta">
+                      <img class="lpk-card-favicon" src="assets/obsidian-favicon.svg" alt="" /><span>obsidian.md</span>
+                    </div>
+                  </div>
+                  <div class="lpk-card-thumb"><img src="assets/obsidian-banner.png" alt="" /></div>
+                </div>
+              </div>
+            </div>
+            <div class="gap"></div>
+
+            <div class="slot" id="s2" data-layout-allow-overflow data-layout-allow-occlusion>
+              <div class="raw" data-layout-allow-occlusion>https://en.wikipedia.org/wiki/Obsidian_(software)<span class="caret" id="caret"></span></div>
+              <div class="card-wrap">
+                <div class="lpk-card" id="card2">
+                  <div class="lpk-card-body">
+                    <div class="lpk-card-title">Obsidian (software)</div>
+                    <div class="lpk-card-desc">
+                      Obsidian is a proprietary personal knowledge base and note-taking application that operates on Markdown files.
+                    </div>
+                    <div class="lpk-card-meta">
+                      <img class="lpk-card-favicon" src="assets/wikipedia-touch.png" alt="" /><span>en.wikipedia.org/wiki/Obsidian_(software)</span>
+                    </div>
+                  </div>
+                  <div class="lpk-card-thumb is-contained"><img src="assets/obsidian-logo.png" alt="" /></div>
+                </div>
+              </div>
+            </div>
+            <div class="gap"></div>
+
+            <div class="slot" id="s3" data-layout-allow-overflow data-layout-allow-occlusion>
+              <div class="raw" data-layout-allow-occlusion>https://raft.github.io/raft.pdf</div>
+              <div class="card-wrap">
+                <div class="lpk-card" id="card3">
+                  <div class="lpk-card-body">
+                    <div class="lpk-card-title">raft.pdf</div>
+                    <div class="lpk-card-desc">PDF document</div>
+                    <div class="lpk-card-meta"><span>raft.github.io/raft.pdf</span></div>
+                  </div>
+                  <div class="lpk-card-thumb is-file">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                      <path d="M10 9H8" />
+                      <path d="M16 13H8" />
+                      <path d="M16 17H8" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pointer" id="pointer">
+          <div class="ripple" id="ripple"></div>
+          <svg class="arrow" viewBox="0 0 24 24">
+            <path d="M4 2.5v17.2l4.6-4.3 2.9 6.6 3.1-1.4-2.9-6.5h6.3z" fill="#111" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" />
+          </svg>
+          <svg class="hand" viewBox="0 0 24 24">
+            <path
+              d="M9 3.5a1.6 1.6 0 0 1 3.2 0V10l.3-.1a1.6 1.6 0 0 1 2.9.6l.2-.1a1.6 1.6 0 0 1 2.8.8 1.6 1.6 0 0 1 2.4 1.4v4.6c0 3.1-2.3 5.6-5.4 5.6h-2c-1.6 0-3-.7-4-2l-3.6-4.6a1.6 1.6 0 0 1 2.4-2.1L9 15.3Z"
+              fill="#111"
+              stroke="#fff"
+              stroke-width="1.3"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <div class="optkey" id="optkey" data-layout-allow-overflow>⌥ Option</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const q = (s) => document.querySelector(s);
+      const root = q("#root");
+      const tl = gsap.timeline({ paused: true });
+      const SLOT_LINE = 24;
+      const SLOT_CARD = 120;
+
+      // Card centres for the pointer, measured once in the final (all cards open) layout.
+      const slots = ["#s1", "#s2", "#s3"].map(q);
+      slots.forEach((s) => (s.style.height = `${SLOT_CARD}px`));
+      const rootBox = root.getBoundingClientRect();
+      const spot = (el, fx, fy) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.left - rootBox.left + r.width * fx, y: r.top - rootBox.top + r.height * fy };
+      };
+      const targets = [spot(q("#card1"), 0.32, 0.5), spot(q("#card2"), 0.3, 0.45), spot(q("#card3"), 0.35, 0.5)];
+      slots.forEach((s) => (s.style.height = ""));
+
+      const open = (slot, at) => {
+        tl.fromTo(slot, { height: SLOT_LINE }, { height: SLOT_CARD, duration: 0.5, ease: "power2.inOut" }, at);
+        tl.to(slot.querySelector(".raw"), { opacity: 0, duration: 0.2 }, at);
+        tl.fromTo(slot.querySelector(".card-wrap"), { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", immediateRender: false }, at + 0.15);
+      };
+      const close = (slot, at) => {
+        tl.to(slot, { height: SLOT_LINE, duration: 0.45, ease: "power2.inOut" }, at);
+        tl.to(slot.querySelector(".card-wrap"), { opacity: 0, duration: 0.2 }, at);
+        tl.to(slot.querySelector(".raw"), { opacity: 1, duration: 0.25 }, at + 0.2);
+      };
+      const pointer = q("#pointer");
+      const hand = (on, at) => {
+        tl.set(".pointer .arrow", { opacity: on ? 0 : 1 }, at);
+        tl.set(".pointer .hand", { opacity: on ? 1 : 0 }, at);
+      };
+      const hover = (card, on, at) => tl.set(card, { className: on ? "lpk-card is-hover" : "lpk-card" }, at);
+      const caption = (id, inAt, outAt) => {
+        tl.fromTo(id, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", immediateRender: false }, inAt);
+        tl.to(id, { opacity: 0, y: -8, duration: 0.3 }, outAt);
+      };
+
+      // 1. URLs grow into cards
+      caption("#cap1", 0.2, 2.6);
+      open(slots[0], 0.9);
+      open(slots[1], 1.35);
+      open(slots[2], 1.8);
+
+      // 2. Hover a page card and the file card, click one
+      caption("#cap2", 2.8, 6.3);
+      tl.set(pointer, { x: 880, y: 600, opacity: 0 }, 0);
+      tl.to(pointer, { opacity: 1, duration: 0.25 }, 2.6);
+      tl.to(pointer, { x: targets[0].x, y: targets[0].y, duration: 0.8, ease: "power2.inOut" }, 2.7);
+      hand(true, 3.5);
+      hover("#card1", true, 3.5);
+      tl.fromTo("#ripple", { opacity: 0.9, scale: 0.3 }, { opacity: 0, scale: 1.3, duration: 0.45, ease: "power1.out", immediateRender: false }, 4.1);
+      hover("#card1", false, 4.7);
+      hand(false, 4.7);
+      tl.to(pointer, { x: targets[2].x, y: targets[2].y, duration: 0.7, ease: "power2.inOut" }, 4.7);
+      hand(true, 5.4);
+      hover("#card3", true, 5.4);
+
+      // 3. Option-click the Wikipedia card: the raw URL comes back, then the card again
+      hover("#card3", false, 6.3);
+      hand(false, 6.3);
+      caption("#cap3", 6.5, 9.9);
+      tl.to(pointer, { x: targets[1].x, y: targets[1].y, duration: 0.6, ease: "power2.inOut" }, 6.3);
+      hand(true, 6.9);
+      hover("#card2", true, 6.9);
+      tl.fromTo("#optkey", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.18, immediateRender: false }, 7.0);
+      tl.fromTo("#ripple", { opacity: 0.9, scale: 0.3 }, { opacity: 0, scale: 1.3, duration: 0.45, ease: "power1.out", immediateRender: false }, 7.4);
+      hover("#card2", false, 7.45);
+      close(slots[1], 7.45);
+      tl.to("#optkey", { opacity: 0, duration: 0.2 }, 7.9);
+      for (let t = 7.9; t < 9.3; t += 1.0) {
+        tl.set("#caret", { opacity: 1 }, t);
+        tl.set("#caret", { opacity: 0 }, t + 0.5);
+      }
+      hand(false, 8.0);
+      tl.to(pointer, { x: 860, y: 600, duration: 0.7, ease: "power2.inOut" }, 8.0);
+      tl.set("#caret", { opacity: 0 }, 9.3);
+      open(slots[1], 9.3);
+
+      // 4. Back to plain URLs for the loop
+      tl.to(pointer, { opacity: 0, duration: 0.3 }, 9.9);
+      close(slots[0], 10.4);
+      close(slots[1], 10.5);
+      close(slots[2], 10.6);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -22,13 +22,15 @@ describe("normalizeUrl", () => {
 });
 
 describe("MetadataCache", () => {
-	it("returns entries until the TTL elapses", () => {
+	it("keeps serving successes past the TTL, marked stale", () => {
 		const { cache, advance } = makeCache();
 		cache.set("https://a.com", ok("https://a.com"));
 		advance(999);
 		expect(cache.get("https://a.com#x")).toEqual(ok("https://a.com"));
+		expect(cache.isStale("https://a.com")).toBe(false);
 		advance(2);
-		expect(cache.get("https://a.com")).toBeNull();
+		expect(cache.get("https://a.com")).toEqual(ok("https://a.com"));
+		expect(cache.isStale("https://a.com")).toBe(true);
 	});
 
 	it("expires failures on the shorter failure TTL", () => {

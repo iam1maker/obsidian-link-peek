@@ -7,7 +7,7 @@ export interface CacheEntry {
 }
 
 export interface CacheOptions {
-	/** Successful lookups live this long. */
+	/** Successful lookups count as fresh this long; after that they are stale but still served. */
 	ttlMs: number;
 	/** Failures are retried sooner: a site that was down should not stay "broken" for a week. */
 	failureTtlMs: number;
@@ -28,7 +28,10 @@ export function normalizeUrl(raw: string): string {
 }
 
 /**
- * In-memory metadata cache with TTL and LRU eviction.
+ * In-memory metadata cache with LRU eviction. Successful lookups never vanish
+ * on age: past the TTL they turn stale and are still served, so a title that
+ * was on screen yesterday does not disappear today (the service refreshes stale
+ * entries in the background). Failures expire on their own, shorter TTL.
  * Persistence is the caller's job: `toJSON()` / `fromJSON()` round-trip plain objects
  * so the plugin can store it with `saveData()`.
  */
@@ -64,6 +67,12 @@ export class MetadataCache {
 		return entry.result;
 	}
 
+	/** A successful entry older than the TTL: still served, due for a refresh. */
+	isStale(url: string): boolean {
+		const entry = this.entries.get(normalizeUrl(url));
+		return !!entry && entry.result.ok && this.now() - entry.fetchedAt > this.options.ttlMs;
+	}
+
 	set(url: string, result: MetadataResult): void {
 		const key = normalizeUrl(url);
 		const timestamp = this.now();
@@ -96,9 +105,9 @@ export class MetadataCache {
 		this.evict();
 	}
 
+	/** Only failures expire; successes go stale instead (see `isStale`). */
 	private isExpired(entry: CacheEntry): boolean {
-		const ttl = entry.result.ok ? this.options.ttlMs : this.options.failureTtlMs;
-		return this.now() - entry.fetchedAt > ttl;
+		return !entry.result.ok && this.now() - entry.fetchedAt > this.options.failureTtlMs;
 	}
 
 	private evict(): void {

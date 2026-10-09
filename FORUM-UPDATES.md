@@ -7,6 +7,23 @@ goes through the humanizer pass before it lands here.
 The forum account cannot post links yet, so entries point to the GitHub releases page in
 words instead of with a URL.
 
+## 0.4.0 (2026-10-09)
+
+0.4.0 is out. The new thing is link cards, off by default.
+
+A URL that sits alone on its own line can now show as a card, like a bookmark: title, two lines of description and the page image. Links to files (PDF, zip, video) get the file name and a file icon, and nothing is downloaded. The note still holds only the plain URL, so nothing is written into your notes and turning it off leaves them as they were.
+
+- Put the cursor on the line, or Option/Alt-click the card, and you are editing the URL again. A plain click opens the link.
+- It works in Live Preview, Reading view, Canvas text cards and pop-out windows.
+- There are the same three modes as the inline titles: off, only links you have already previewed, or fetch the ones on screen.
+- The compact card setting gives a one-line card if the full one is too big for your notes.
+
+Two smaller changes. In dark themes, site icons now sit on a small light tile, so black ones like GitHub's no longer disappear. And when cached data gets old, titles and cards keep showing it; hovering the link refreshes it in the background.
+
+Turn it on under Settings > Link Peek > Link cards.
+
+Release notes are on the GitHub releases page, tag 0.4.0 (repo link is in the first post; this account can't post links yet).
+
 ## 0.3.2 (2026-10-09)
 
 0.3.2 is out. A small release, mostly groundwork for the next feature.

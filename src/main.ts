@@ -1,5 +1,7 @@
 import { Notice, Plugin, debounce, getLanguage } from "obsidian";
 import { MetadataCache, type SerializedCache } from "./cache";
+import { cardEditorExtension } from "./cards/live-preview";
+import { registerReadingCards } from "./cards/reading-view";
 import { HoverController } from "./hover/controller";
 import { setLocale, t } from "./i18n";
 import { optedOut } from "./inline/classify";
@@ -72,7 +74,9 @@ export default class LinkPeekPlugin extends Plugin {
 			},
 			peek: (url, el) => hover.previewElement(url, el),
 		};
-		this.registerEditorExtension(inlineEditorExtension(inline));
+		this.registerEditorExtension([cardEditorExtension(inline), inlineEditorExtension(inline)]);
+		// Cards first: they need to see a paragraph's link text before inline titles replace it.
+		registerReadingCards(this, inline);
 		registerReadingView(this, inline);
 		this.registerEvent(
 			this.app.metadataCache.on("changed", (file, _data, cache) => {
@@ -110,6 +114,18 @@ export default class LinkPeekPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: "toggle-link-cards",
+			name: t("command.toggleCards"),
+			callback: async () => {
+				const { blockCards, blockLastMode } = this.settings;
+				this.settings.blockCards = blockCards === "off" ? blockLastMode : "off";
+				if (blockCards !== "off") this.settings.blockLastMode = blockCards;
+				await this.saveSettings();
+				new Notice(t(this.settings.blockCards === "off" ? "notice.cardsOff" : "notice.cardsOn"));
+			},
+		});
+
+		this.addCommand({
 			id: "preview-link-under-cursor",
 			name: t("command.previewAtCursor"),
 			editorCallback: (editor) => hover.previewAtCursor(editor),
@@ -131,7 +147,7 @@ export default class LinkPeekPlugin extends Plugin {
 			ttlMs: ttlMsFromDays(this.settings.cacheTtlDays),
 			maxEntries: this.settings.maxCacheEntries,
 		});
-		if (this.settings.inlineTitles !== "fetch") this.prefetch.clear();
+		if (this.settings.inlineTitles !== "fetch" && this.settings.blockCards !== "fetch") this.prefetch.clear();
 		this.notifyRefresh();
 		await this.saveAll();
 	}

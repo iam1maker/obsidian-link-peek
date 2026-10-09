@@ -10,6 +10,11 @@ export function spanFor(near: Node, cls: string): HTMLSpanElement {
 	return (near.win as Window & { createSpan: typeof createSpan }).createSpan({ cls });
 }
 
+/** The `<div>` counterpart of `spanFor`, for block widgets. */
+export function divFor(near: Node, cls: string): HTMLDivElement {
+	return (near.win as Window & { createDiv: typeof createDiv }).createDiv({ cls });
+}
+
 /** Fill an element with favicon + title. Shared by the Live Preview widget and Reading view anchors. */
 export function fillChip(el: HTMLElement, label: ChipLabel): void {
 	el.empty();
@@ -33,14 +38,17 @@ export function openUrl(url: string): void {
 export interface LinkMenuActions {
 	/** Reveal the raw URL in the editor for editing. Absent in Reading view. */
 	edit?: () => void;
-	/** Open the Link Peek card pinned next to the link. */
-	peek: () => void;
+	/** Open the Link Peek card pinned next to the link. Absent where the link already is a card. */
+	peek?: () => void;
 }
 
 export function showLinkMenu(event: MouseEvent, url: string, actions: LinkMenuActions): void {
 	const menu = new Menu();
 	menu.addItem((item) => item.setTitle(t("menu.open")).setIcon("external-link").onClick(() => openUrl(url)));
-	menu.addItem((item) => item.setTitle(t("menu.preview")).setIcon("panel-top").onClick(actions.peek));
+	if (actions.peek) {
+		const peek = actions.peek;
+		menu.addItem((item) => item.setTitle(t("menu.preview")).setIcon("panel-top").onClick(peek));
+	}
 	menu.addItem((item) =>
 		item
 			.setTitle(t("menu.copy"))

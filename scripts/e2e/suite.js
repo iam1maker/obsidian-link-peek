@@ -22,7 +22,12 @@
 	const PDF = `${BASE}/files/report.pdf`;
 	const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 	const prefix = FOLDER ? `${FOLDER.replace(/\/$/, "")}/` : "";
-	const paths = { main: `${prefix}Link Peek e2e fixture.md`, optOut: `${prefix}Link Peek e2e opt-out.md` };
+	const paths = {
+		main: `${prefix}Link Peek e2e fixture.md`,
+		optOut: `${prefix}Link Peek e2e opt-out.md`,
+		cards: `${prefix}Link Peek e2e cards.md`,
+	};
+	const UNREACHABLE = `${BASE}/unreachable`;
 
 	const FIXTURE = [
 		`bare: ${url("alpha")}`,
@@ -46,6 +51,28 @@
 		"end",
 	].join("\n");
 	const OPT_OUT = ["---", "link-peek: off", "---", "", `bare: ${url("alpha")}`, ""].join("\n");
+	// Cards: alpha and delta stand alone; beta continues a paragraph, gamma is a list item,
+	// the fenced one is code.
+	const CARDS = [
+		"Intro paragraph.",
+		"",
+		url("alpha"),
+		"",
+		url("beta"),
+		"continues the paragraph",
+		"",
+		`- ${url("gamma")}`,
+		"",
+		`<${url("delta")}>`,
+		"",
+		"```",
+		url("alpha"),
+		"```",
+		"",
+		"end",
+	].join("\n");
+	const cardsIn = (root) => [...root.querySelectorAll(".lpk-card")].filter((card) => card.offsetParent !== null);
+	const cardTitles = (root) => cardsIn(root).map((card) => card.querySelector(".lpk-card-title")?.textContent);
 
 	const assert = (condition, message) => {
 		if (!condition) throw new Error(message);
@@ -99,7 +126,7 @@
 	webContents.setBackgroundThrottling(false);
 	const savedSettings = { ...plugin.settings };
 	const leaves = [];
-	const seeded = [...Object.keys(PAGES).map(url), PDF];
+	const seeded = [...Object.keys(PAGES).map(url), PDF, UNREACHABLE];
 
 	try {
 		for (const [slug, title] of Object.entries(PAGES)) {
@@ -116,10 +143,12 @@
 			inlineTitles: "cached",
 			inlineFavicons: false,
 			compactCards: false,
+			showImages: true,
+			blockCards: "off",
 		});
 		await plugin.saveSettings();
 
-		for (const [key, content] of [["main", FIXTURE], ["optOut", OPT_OUT]]) {
+		for (const [key, content] of [["main", FIXTURE], ["optOut", OPT_OUT], ["cards", CARDS]]) {
 			const existing = app.vault.getFileByPath(paths[key]);
 			if (existing) await app.vault.modify(existing, content);
 			else await app.vault.create(paths[key], content);
@@ -234,6 +263,84 @@
 				return found.length >= 3 && found;
 			}, "chips in the pop-out");
 			assert(chips.every((c) => c.ownerDocument === doc), "chip created in the wrong document");
+		});
+
+		test("stale cache entries keep their title and survive a failed refresh", async () => {
+			const leaf = leaves[0];
+			await show(leaf);
+			// Age alpha past the TTL; the refresh hits the unresolvable .test host and fails.
+			const entry = plugin.cache.entries.get(url("alpha"));
+			entry.fetchedAt -= (plugin.settings.cacheTtlDays + 1) * 24 * 60 * 60 * 1000;
+			assert(plugin.cache.isStale(url("alpha")), "entry did not turn stale");
+			const fresh = await plugin.service.revalidate(url("alpha"));
+			assert(fresh && fresh.ok && fresh.meta.title === PAGES.alpha, `stale entry lost: ${JSON.stringify(fresh)}`);
+			plugin.service.emit();
+			await sleep(300);
+			assert(chipsIn(leaf.view.containerEl).some((c) => hrefOf(c) === url("alpha")), "stale title disappeared");
+		});
+
+		test("standalone URL lines become cards in Live Preview", async () => {
+			plugin.settings.blockCards = "cached";
+			await plugin.saveSettings();
+			const leaf = await openNote(paths.cards);
+			leaves.push(leaf);
+			leaf.view.editor.setCursor({ line: CARDS.split("\n").length - 1, ch: 0 });
+			const titles = await waitFor(() => {
+				const found = cardTitles(leaf.view.containerEl);
+				return found.length >= 2 && found;
+			}, "two cards");
+			sameSet(titles, [PAGES.alpha, PAGES.delta], "card titles");
+			const chips = chipsIn(leaf.view.containerEl).map(hrefOf);
+			assert(chips.includes(url("beta")) && chips.includes(url("gamma")), `beta and gamma should stay inline: ${chips}`);
+			assert(!chips.includes(url("alpha")), "a carded line also got an inline title");
+		});
+
+		test("caret on a card line brings the URL back", async () => {
+			const leaf = leaves[leaves.length - 1];
+			await show(leaf);
+			leaf.view.editor.setCursor({ line: 2, ch: 0 });
+			await waitFor(() => !cardTitles(leaf.view.containerEl).includes(PAGES.alpha), "alpha card to reveal");
+			leaf.view.editor.setCursor({ line: CARDS.split("\n").length - 1, ch: 0 });
+			await waitFor(() => cardTitles(leaf.view.containerEl).includes(PAGES.alpha), "alpha card to return");
+		});
+
+		test("Reading view draws the same cards", async () => {
+			const leaf = leaves[leaves.length - 1];
+			await show(leaf);
+			await setMode(leaf, "reading");
+			const view = leaf.view.containerEl.querySelector(".markdown-reading-view");
+			const titles = await waitFor(() => {
+				const found = cardTitles(view);
+				return found.length >= 2 && found;
+			}, "two reading-view cards");
+			sameSet(titles, [PAGES.alpha, PAGES.delta], "reading card titles");
+			await setMode(leaf, "live");
+		});
+
+		test("fetch mode holds a placeholder, then falls back to the URL on failure", async () => {
+			const leaf = leaves[leaves.length - 1];
+			await show(leaf);
+			const editor = leaf.view.editor;
+			const last = editor.lineCount() - 1;
+			editor.replaceRange(`\n\n${UNREACHABLE}\n`, { line: last, ch: editor.getLine(last).length });
+			editor.setCursor({ line: 0, ch: 0 });
+			plugin.settings.blockCards = "fetch";
+			await plugin.saveSettings();
+			await waitFor(() => leaf.view.containerEl.querySelector(".lpk-card.is-loading"), "a loading card");
+			await waitFor(() => !leaf.view.containerEl.querySelector(".lpk-card.is-loading"), "the failed card to go", 15000);
+			const plain = [...leaf.view.containerEl.querySelectorAll(".cm-line")].some((line) => line.textContent.includes(UNREACHABLE));
+			assert(plain, "the URL did not come back as text");
+			plugin.settings.blockCards = "cached";
+			await plugin.saveSettings();
+		});
+
+		test("turning cards off leaves inline titles", async () => {
+			const leaf = leaves[leaves.length - 1];
+			await show(leaf);
+			plugin.settings.blockCards = "off";
+			await plugin.saveSettings();
+			await waitFor(() => cardsIn(leaf.view.containerEl).length === 0, "cards to disappear");
+			await waitFor(() => chipsIn(leaf.view.containerEl).some((c) => hrefOf(c) === url("alpha")), "alpha to fall back to a title");
 		});
 
 		// ---- run -------------------------------------------------------------------

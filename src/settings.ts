@@ -20,6 +20,7 @@ export interface LinkPeekSettings {
 	triggerModifier: TriggerModifier;
 	/** Restart the hover delay whenever the pointer moves, so only a resting pointer opens a card. */
 	requireStillPointer: boolean;
+	/** Days a result counts as fresh; stale results are still shown and refreshed on hover. */
 	cacheTtlDays: number;
 	maxCacheEntries: number;
 	showImages: boolean;
@@ -40,6 +41,10 @@ export interface LinkPeekSettings {
 	inlineFavicons: boolean;
 	/** Inline titles longer than this are cut with an ellipsis. */
 	inlineMaxTitle: number;
+	/** URLs alone on their own line drawn as cards; same three modes as the inline titles. */
+	blockCards: InlineTitlesMode;
+	/** The mode the toggle command restores when turning cards back on. */
+	blockLastMode: Exclude<InlineTitlesMode, "off">;
 }
 
 export const DEFAULT_SETTINGS: LinkPeekSettings = {
@@ -59,6 +64,8 @@ export const DEFAULT_SETTINGS: LinkPeekSettings = {
 	inlineLastMode: "cached",
 	inlineFavicons: false,
 	inlineMaxTitle: 60,
+	blockCards: "off",
+	blockLastMode: "cached",
 };
 
 export const FAILURE_TTL_MS = 60 * 60 * 1000;
@@ -223,6 +230,27 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 				],
 			},
 			{
+				type: "group",
+				heading: t("settings.heading.cards"),
+				items: [
+					{
+						name: t("settings.cards.name"),
+						desc: t("settings.cards.desc"),
+						aliases: ["bookmark", "block card", "embed"],
+						control: {
+							type: "dropdown",
+							key: "blockCards",
+							defaultValue: DEFAULT_SETTINGS.blockCards,
+							options: {
+								off: t("settings.inline.off"),
+								cached: t("settings.cards.cached"),
+								fetch: t("settings.cards.fetch"),
+							},
+						},
+					},
+				],
+			},
+			{
 				name: t("settings.canvas.name"),
 				desc: t("settings.canvas.desc"),
 				control: { type: "toggle", key: "enableCanvas", defaultValue: DEFAULT_SETTINGS.enableCanvas },
@@ -294,6 +322,7 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 		} else {
 			settings[key] = value;
 			if (key === "inlineTitles" && value !== "off") settings.inlineLastMode = value;
+			if (key === "blockCards" && value !== "off") settings.blockLastMode = value;
 		}
 		await this.plugin.saveSettings();
 	}

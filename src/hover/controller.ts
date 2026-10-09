@@ -268,6 +268,9 @@ export class HoverController {
 		const cached = this.service.get(url);
 		if (cached) {
 			popover.show(anchorRect, toState(url, cached));
+			// Old metadata shows at once; a refresh in the background replaces it when it lands.
+			const fresh = await this.service.revalidate(url);
+			if (fresh?.ok && this.currentUrl === url && this.active === popover) popover.update(toState(url, fresh));
 			return;
 		}
 

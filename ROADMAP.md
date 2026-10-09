@@ -1,6 +1,6 @@
 # Link Peek roadmap
 
-Last reviewed: 2026-10-08 (0.3.1 review fixes). Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
+Last reviewed: 2026-10-09 (0.4.0 link cards). Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
 
 ## Positioning
 
@@ -93,9 +93,9 @@ Decided 2026-10-09.
   Obsidian's language setting.
 - [x] **End-to-end tests.** See Engineering debt.
 
-## 0.4 — block cards for standalone links (scheduled after 0.3.2)
+## 0.4 — block cards for standalone links
 
-Decided 2026-10-06; scheduled 2026-10-09, to start once 0.3.2 is out.
+Decided 2026-10-06, built 2026-10-09. Code in `src/cards/`; the rules below are what shipped.
 
 **What.** A URL alone on its own line (nothing else on the line, outside code) renders as a full
 card in Live Preview, Reading view and Canvas text cards: image, title, description, site, the
@@ -111,14 +111,25 @@ Preview, Reading view and Canvas; URL Enricher's card style is Live Preview only
 **Reuse.** Cache, fetch pipeline, the Off / cached / fetch modes, the per-note
 `link-peek: off` switch, click and right-click behaviour, card styles from the hover popover.
 
-**Known work.**
-- Block decorations cannot come from a `ViewPlugin` in CodeMirror; Live Preview needs a
-  `StateField` that recomputes on doc changes and on the cache-change signal.
-- Layout shift when a card appears or its image loads. Default to cached-only, give cards a
-  fixed height, reserve the image box before it loads.
-- Caret on the line reveals the raw URL, same rule as the inline titles.
-- Settings: a toggle ("Show standalone links as cards"), image on/off reusing the existing
-  per-domain thumbnail list, compact variant reusing the compact-card setting.
+**Done.**
+- [x] A `StateField` (block decorations cannot come from a `ViewPlugin`) rescans candidate lines
+  only when the document or its parse changes; selection changes and the cache signal only
+  redraw. No redraw under IME composition.
+- [x] "Standalone" means a bare URL or `<autolink>` alone on its line *and* its own paragraph
+  (blank line, heading or document edge around it), outside lists, quotes, tables, code and
+  comments, so Live Preview and Reading view agree.
+- [x] Fixed card height (112 px, compact 46 px), image box reserved; thumbnails sized for 1.91:1
+  social images, near-square images shown whole. Fetch mode shows a skeleton of the same size
+  and falls back to the plain URL when the fetch fails.
+- [x] Caret on the line, or Option/Alt-click, reveals the raw URL. Click opens, right-click has
+  Open / Copy URL / Edit URL.
+- [x] Settings: "Links on their own line" (Off / cached / fetch) and a toggle command; the
+  compact, thumbnail and per-domain image settings apply. Works in Live Preview, Reading view,
+  Canvas text cards and pop-outs.
+- [x] Stale cache entries (past the TTL) keep showing and are refreshed in the background on
+  hover instead of disappearing; a failed refresh keeps the old metadata.
+- [x] e2e scenarios for cards, the caret, Reading view, fetch fallback and the stale cache.
+- [x] Dark themes: favicons sit on a light tile so black-on-transparent icons stay visible.
 
 **Idea for later, separate from 0.4.** Render existing Auto Card Link `cardlink` code blocks
 read-only, so its users can switch without rewriting notes. Both plugins would register the
