@@ -7,6 +7,14 @@ goes through the humanizer pass before it lands here.
 The forum account cannot post links yet, so entries point to the GitHub releases page in
 words instead of with a URL.
 
+## 0.4.2 (2026-10-16)
+
+0.4.2 is a small one. The bottom of the plugin settings now has a Feedback section with two buttons. One opens a bug report on GitHub, the other a feature request, and each is a short form: what happened, the link that would not preview, and your Obsidian and Link Peek versions. Chinese is fine too.
+
+The repo also has Discussions now, for questions or anything that is not quite a bug.
+
+Release notes are on the GitHub releases page, tag 0.4.2 (repo link is in the first post; this account can't post links yet).
+
 ## 0.4.1 (2026-10-09)
 
 0.4.1 is a small fix. Hovering a link card no longer pops up a hover card on top of it; the card already shows everything the popup would. The README now also comes in Simplified Chinese.

@@ -1,6 +1,6 @@
 # Link Peek roadmap
 
-Last reviewed: 2026-10-09 (0.4.0 link cards). Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
+Last reviewed: 2026-10-16 (0.4.2 feedback links). Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
 
 ## Positioning
 
@@ -131,6 +131,7 @@ Preview, Reading view and Canvas; URL Enricher's card style is Live Preview only
 - [x] e2e scenarios for cards, the caret, Reading view, fetch fallback and the stale cache.
 - [x] Dark themes: favicons sit on a light tile so black-on-transparent icons stay visible.
 - [x] 0.4.1: no hover card over a link card (it already is the preview). Chinese README.
+- [x] 0.4.2: Feedback section in settings (bug report, feature request), bilingual issue forms, Discussions.
 
 **Idea for later, separate from 0.4.** Render existing Auto Card Link `cardlink` code blocks
 read-only, so its users can switch without rewriting notes. Both plugins would register the
