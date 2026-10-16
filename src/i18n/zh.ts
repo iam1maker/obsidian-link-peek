@@ -53,6 +53,11 @@ export const zh: Record<MessageKey, string> = {
 	"settings.clear.name": "清除缓存",
 	"settings.clear.desc.one": "已缓存 {n} 个链接。",
 	"settings.clear.desc.other": "已缓存 {n} 个链接。",
+	"settings.heading.feedback": "反馈",
+	"settings.bug.name": "报告问题",
+	"settings.bug.desc": "在 GitHub 上新建一个 issue，可以直接用中文写。如果是某个链接预览不出来，请附上这个链接。",
+	"settings.idea.name": "提建议",
+	"settings.idea.desc": "在 GitHub 上新建一个 issue，写下你想要的功能或改进。",
 
 	"unit.ms": "{n} 毫秒",
 	"unit.line.one": "{n} 行",

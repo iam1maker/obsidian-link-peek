@@ -1,5 +1,7 @@
 import { App, Notice, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
+import { BUG_REPORT_URL, FEATURE_REQUEST_URL } from "./feedback";
 import { plural, t } from "./i18n";
+import { openUrl } from "./inline/chip";
 import type LinkPeekPlugin from "./main";
 
 /**
@@ -300,6 +302,24 @@ export class LinkPeekSettingTab extends PluginSettingTab {
 							new Notice(t("notice.cacheCleared"));
 							this.update();
 						},
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: t("settings.heading.feedback"),
+				items: [
+					{
+						name: t("settings.bug.name"),
+						desc: t("settings.bug.desc"),
+						aliases: ["bug", "issue", "github"],
+						action: () => openUrl(BUG_REPORT_URL),
+					},
+					{
+						name: t("settings.idea.name"),
+						desc: t("settings.idea.desc"),
+						aliases: ["feature request", "idea", "github"],
+						action: () => openUrl(FEATURE_REQUEST_URL),
 					},
 				],
 			},

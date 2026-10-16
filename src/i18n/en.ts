@@ -51,6 +51,11 @@ export const en = {
 	"settings.clear.name": "Clear cache",
 	"settings.clear.desc.one": "{n} link cached.",
 	"settings.clear.desc.other": "{n} links cached.",
+	"settings.heading.feedback": "Feedback",
+	"settings.bug.name": "Report a problem",
+	"settings.bug.desc": "Opens a new issue on GitHub. If a link did not preview, include it.",
+	"settings.idea.name": "Suggest a feature",
+	"settings.idea.desc": "Opens a new issue on GitHub for an idea or a change you would like.",
 
 	"unit.ms": "{n} ms",
 	"unit.line.one": "{n} line",

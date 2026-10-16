@@ -1,0 +1,16 @@
+name: Feature request / 提建议
+description: An idea or a change you would like. 想要的新功能或改进。中文、English 都可以。
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like? / 你想要什么
+      description: Describe the idea and the situation where you would use it. 说说想法，以及你会在什么场景下用到。
+    validations:
+      required: true
+  - type: textarea
+    id: now
+    attributes:
+      label: What do you do now? / 现在是怎么做的（可选）
+      description: Optional. How you handle this today, if at all. 现在没有这个功能时你是怎么处理的。

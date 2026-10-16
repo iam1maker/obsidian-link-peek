@@ -30,6 +30,10 @@ Settings → Community plugins → Browse → search for "Link Peek".
 - From the keyboard, use the command *Preview link under cursor*.
 - The interface follows Obsidian's language; Simplified Chinese is included.
 
+## Feedback
+
+Found a bug or a link that will not preview? [Open an issue](https://github.com/iam1maker/obsidian-link-peek/issues/new?template=bug_report.yml) and include the link if you can. Ideas go [here](https://github.com/iam1maker/obsidian-link-peek/issues/new?template=feature_request.yml). Questions and anything else go to [Discussions](https://github.com/iam1maker/obsidian-link-peek/discussions). Bug reports and ideas are also under *Feedback* at the bottom of the plugin settings. Chinese or English is fine.
+
 ## Privacy
 
 Hovering a link sends one GET request to that link's site and nowhere else. There is no telemetry; images and icons load straight from the site. Inline titles and link cards only reuse what hovering has cached, unless you switch them to their *Fetch* mode. The clipboard is never read, and only *Copy URL* in a link's right-click menu writes to it.

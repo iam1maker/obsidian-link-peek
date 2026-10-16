@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas / 使用问题和想法
+    url: https://github.com/iam1maker/obsidian-link-peek/discussions
+    about: Not sure it is a bug, or just want to ask or chat? Start a discussion. 不确定是不是 bug，或者只是想问问、聊聊，可以发到 Discussions。中文、English 都可以。

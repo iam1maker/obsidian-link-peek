@@ -30,6 +30,10 @@
 - 用键盘时，可以用命令「预览光标处的链接」。
 - 界面语言跟随 Obsidian 的设置，支持简体中文。
 
+## 反馈
+
+遇到问题，或者某个链接预览不出来，请[新建一个 issue](https://github.com/iam1maker/obsidian-link-peek/issues/new?template=bug_report.yml)，方便的话附上那个链接。想要新功能或改进，在[这里提](https://github.com/iam1maker/obsidian-link-peek/issues/new?template=feature_request.yml)。只是想问问怎么用，或者随便聊聊，发到 [Discussions](https://github.com/iam1maker/obsidian-link-peek/discussions)。插件设置页最下面的「反馈」里也有报告问题和提建议的入口。直接用中文写就行。
+
 ## 隐私
 
 悬停一个链接时，插件只向这个链接所在的网站发一次 GET 请求，不发往任何其他地方，也不收集任何使用数据。图片和图标直接从对应网站加载。行内标题和链接卡片只使用悬停时已经缓存的数据，除非你把它们切换到「抓取」模式。插件从不读取剪贴板，只有链接右键菜单里的「复制 URL」会往剪贴板写入内容。

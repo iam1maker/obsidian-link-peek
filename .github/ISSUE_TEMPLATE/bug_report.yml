@@ -1,0 +1,43 @@
+name: Bug report / 报告问题
+description: Something does not work as expected. 有地方不对劲。中文、English 都可以。
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / 发生了什么
+      description: What you did, what you expected, what you saw instead. 你做了什么，本来应该怎样，实际怎样。
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link that fails / 出问题的链接
+      description: If one link does not preview or looks wrong, paste it here. 如果是某个链接预览不出来或显示不对，贴在这里。
+      placeholder: https://example.com/page
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where / 在哪里
+      multiple: true
+      options:
+        - Live Preview / 实时预览
+        - Reading view / 阅读视图
+        - Canvas / 白板
+        - Inline titles / 行内标题
+        - Link cards / 链接卡片
+        - Settings / 设置
+  - type: input
+    id: versions
+    attributes:
+      label: Versions / 版本
+      description: Obsidian version, Link Peek version, and OS (Settings → About; Settings → Community plugins). Obsidian 版本、Link Peek 版本、系统。
+      placeholder: Obsidian 1.13.1, Link Peek 0.4.1, macOS 15
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors / 控制台报错（可选）
+      description: Optional. Open the developer console (Cmd+Opt+I / Ctrl+Shift+I) and paste any red lines mentioning Link Peek. 打开开发者控制台，把带 Link Peek 的红色报错贴进来。
+      render: text
