@@ -22,9 +22,19 @@ export function fillChip(el: HTMLElement, label: ChipLabel): void {
 	el.createSpan({ cls: "lpk-chip-title", text: label.title });
 }
 
+/**
+ * Size attributes for favicon `<img>`s. Themes that stretch note images to the line width
+ * (Minimal's "Maximize media", Obsidian's own max-width rule) skip images that carry a `width`;
+ * the stylesheet still sets the size shown.
+ */
+export const ICON_SIZE_ATTRS = { width: "16", height: "16" } as const;
+
 /** A favicon `<img>` that removes itself when the site has none, so no broken-image glyph ever shows. */
 export function appendIcon(parent: HTMLElement, src: string, cls: string, prepend = false): HTMLImageElement {
-	const img = parent.createEl("img", { cls, attr: { src, alt: "", referrerpolicy: "no-referrer", draggable: "false" } });
+	const img = parent.createEl("img", {
+		cls,
+		attr: { src, alt: "", referrerpolicy: "no-referrer", draggable: "false", ...ICON_SIZE_ATTRS },
+	});
 	if (prepend) parent.prepend(img);
 	img.addEventListener("error", () => img.remove(), { once: true });
 	return img;

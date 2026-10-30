@@ -4,6 +4,7 @@ import { describeError } from "../metadata/errors";
 import { FILE_ICONS, fileKindOf } from "../metadata/files";
 import type { ErrorKind, LinkMetadata } from "../metadata/types";
 import { displayUrl, hostnameOf } from "../metadata/parse";
+import { ICON_SIZE_ATTRS } from "../inline/chip";
 
 const VIEWPORT_MARGIN = 8;
 const ANCHOR_GAP = 6;
@@ -168,7 +169,10 @@ export class LinkPopover {
 	private renderHeader(siteName: string | null, favicon: string | null, url: string): void {
 		const header = this.el.createDiv({ cls: "lpk-header" });
 		if (favicon) {
-			const icon = header.createEl("img", { cls: "lpk-favicon", attr: { src: favicon, alt: "", referrerpolicy: "no-referrer" } });
+			const icon = header.createEl("img", {
+				cls: "lpk-favicon",
+				attr: { src: favicon, alt: "", referrerpolicy: "no-referrer", ...ICON_SIZE_ATTRS },
+			});
 			icon.addEventListener("error", () => icon.remove(), { once: true });
 		} else {
 			setIcon(header.createSpan({ cls: "lpk-favicon lpk-favicon-fallback" }), "globe");
