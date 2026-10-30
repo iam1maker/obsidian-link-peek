@@ -7,6 +7,12 @@ goes through the humanizer pass before it lands here.
 The forum account cannot post links yet, so entries point to the GitHub releases page in
 words instead of with a URL.
 
+## 0.4.3 (2026-10-30)
+
+0.4.3 is a small fix. With the Minimal theme and the Minimal Theme Settings plugin, the "Maximize media" option (on by default) stretched Link Peek's site icons to the full width of the line. The icon ended up on a line of its own and the page title dropped to the next one. That hit inline link titles, favicons on text links, link cards and the hover card header. The icons now keep their size with that option on. They also carry a width attribute, which full-width image rules in other themes usually skip.
+
+Release notes are on the GitHub releases page, tag 0.4.3 (repo link is in the first post; this account can't post links yet).
+
 ## 0.4.2 (2026-10-16)
 
 0.4.2 is a small one. The bottom of the plugin settings now has a Feedback section with two buttons. One opens a bug report on GitHub, the other a feature request, and each is a short form: what happened, the link that would not preview, and your Obsidian and Link Peek versions. Chinese is fine too.

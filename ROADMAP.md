@@ -1,6 +1,6 @@
 # Link Peek roadmap
 
-Last reviewed: 2026-10-16 (0.4.2 feedback links). Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
+Last reviewed: 2026-10-30 (0.4.3 favicon size fix). Status markers: `[ ]` planned, `[~]` in progress, `[x]` shipped.
 
 ## Positioning
 
@@ -132,6 +132,7 @@ Preview, Reading view and Canvas; URL Enricher's card style is Live Preview only
 - [x] Dark themes: favicons sit on a light tile so black-on-transparent icons stay visible.
 - [x] 0.4.1: no hover card over a link card (it already is the preview). Chinese README.
 - [x] 0.4.2: Feedback section in settings (bug report, feature request), bilingual issue forms, Discussions.
+- [x] 0.4.3: favicons keep their size when the theme stretches note images (Minimal Theme Settings "Maximize media", on by default); favicon `<img>`s carry width/height attributes.
 
 **Idea for later, separate from 0.4.** Render existing Auto Card Link `cardlink` code blocks
 read-only, so its users can switch without rewriting notes. Both plugins would register the
